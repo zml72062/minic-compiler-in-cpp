@@ -29,6 +29,7 @@ struct SymbolTableEntry
     std::vector<void*> init_exp;
     std::size_t addr;
 
+
     SymbolTableEntry() = default;
     SymbolTableEntry(const std::string& _name, int basic_type);
     /* Initialize by value (for constants) */
@@ -66,6 +67,7 @@ public:
     SymbolTable* parent_scope();
     SymbolTable* create_subscope();
     void add_entry(const SymbolTableEntry& entry);
+    void print_table();
     SymbolTableEntry* get_entry_if_contains(const char* _name);
     SymbolTableEntry* get_entry_if_contains_in_tree(const char* _name);
 };

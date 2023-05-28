@@ -17,6 +17,7 @@
 #define SYMBOL_AND 8
 #define SYMBOL_OR 9
 #define SYMBOL_INDEX 10
+#define SYMBOL_ARR_INIT 11
 
 struct Symbol
 {
@@ -141,6 +142,16 @@ struct IndexExpression: public Symbol
 {
     IndexExpression(Symbol* _loperand, Symbol* _roperand);
     virtual IndexExpression* copy();
+    virtual std::string to_str();
+};
+
+struct ArrayInitialization: public Symbol
+{
+    std::vector<std::size_t> sizes;
+    ArrayInitialization(const std::vector<std::size_t>& _sizes);
+    void add_subvalue(Symbol* _symbol);
+    std::vector<int> to_vector();
+    virtual ArrayInitialization* copy();
     virtual std::string to_str();
 };
 

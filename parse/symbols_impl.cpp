@@ -117,6 +117,74 @@ IndexExpression::IndexExpression(Symbol* _loperand, Symbol* _roperand): Symbol()
     _roperand->parent = this;
 }
 
+ArrayInitialization::ArrayInitialization(const std::vector<std::size_t>& _sizes)
+{
+    this->symbol_idx = SYMBOL_ARR_INIT;
+    this->sizes = _sizes;
+}
+
+void ArrayInitialization::add_subvalue(Symbol* _symbol)
+{
+    this->children.push_back(_symbol);
+    _symbol->parent = this;
+}
+
+std::vector<int> ArrayInitialization::to_vector()
+{
+    std::size_t dim = sizes.size();
+    std::vector<std::size_t> mul_sizes(dim, 1);
+    for (auto i = dim - 1; i > 0; i--)
+    {
+        mul_sizes[i - 1] = mul_sizes[i] * sizes[i];
+    }
+    std::size_t full_size = mul_sizes[0] * sizes[0], cur_idx = 0;
+    std::vector<int> res_array(full_size);
+
+    for (auto& child : children)
+    {
+        if (child->symbol_idx == SYMBOL_ARR_INIT)
+        {
+            size_t i = 0;
+            for (; i < dim; i++)
+                if (cur_idx % mul_sizes[i] == 0)
+                    break;
+            ArrayInitialization* as_array = (ArrayInitialization*)child;
+            std::vector<std::size_t> used_sizes(sizes.begin() + (i + 1),
+                                                sizes.end());
+            if (used_sizes.size() == 0)
+            {
+                if (cur_idx == full_size)
+                    return res_array;
+                res_array[cur_idx++] = as_array->to_vector()[0];
+            }
+            else
+            {
+                as_array->sizes = used_sizes;
+                auto subarray = as_array->to_vector();
+                auto subarray_size = subarray.size();
+                for (auto i = 0; i < subarray_size; i++)
+                {
+                    if (cur_idx == full_size)
+                        return res_array;
+                    res_array[cur_idx++] = subarray[i];
+                }
+            }
+        }
+        else
+        {
+            if (cur_idx == full_size)
+                return res_array;
+            res_array[cur_idx++] = ((Number*)child)->value[0];
+        }
+    }
+    for (; cur_idx < full_size; cur_idx++)
+    {
+        res_array[cur_idx] = 0;
+    }
+    return res_array;
+}
+
+
 LexemePacker* LexemePacker::copy()
 {
     return new LexemePacker(*this);
@@ -180,6 +248,11 @@ OrExpression* OrExpression::copy()
 IndexExpression* IndexExpression::copy()
 {
     return new IndexExpression(*this);
+}
+
+ArrayInitialization* ArrayInitialization::copy()
+{
+    return new ArrayInitialization(*this);
 }
 
 std::string Symbol::to_str()
@@ -323,9 +396,18 @@ std::string OrExpression::to_str()
 std::string IndexExpression::to_str()
 {
     return this->children[0]->to_str() + "[" + this->children[1]->to_str() + "]";
-
 }
 
+std::string ArrayInitialization::to_str()
+{
+    std::string val_str = "{";
+    std::vector<int> value = this->to_vector();
+    for (auto& val: value)
+    {
+        val_str += (std::to_string(val) + ", ");
+    }
+    return array_type_to_str(this->sizes) + val_str + "}";
+}
 
 void clear(Symbol* symbol)
 {

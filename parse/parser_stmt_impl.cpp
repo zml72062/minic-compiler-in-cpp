@@ -46,7 +46,7 @@ void Parser::parse_next()
                i.e. identifier or number. */
             if (next_val == IDENTIFIERS_VAL)
             {
-                states.push(GET_INT_DECLARE);
+                states.push(GET_INT_NAME_BUT_CAN_BE_FUNCTION);
                 symbols.push(new LexemePacker(next_lexeme));
                 return;
             }
@@ -70,7 +70,7 @@ void Parser::parse_next()
         case GET_CONST_INT_WAIT_FOR_IDENT:
             if (next_val == IDENTIFIERS_VAL)
             {
-                states.push(GET_CONST_INT_DECLARE);
+                states.push(GET_CONST_INT_NAME);
                 symbols.push(new LexemePacker(next_lexeme));
                 return;
             }
@@ -79,7 +79,7 @@ void Parser::parse_next()
                     this->lexer.get_lineno());
             this->error = 1;
             return;
-        case GET_INT_DECLARE:
+        case GET_INT_NAME_BUT_CAN_BE_FUNCTION:
             if (next_val == SEMICOLON ||
                 next_val == COMMA ||
                 next_val == ASSIGN ||
@@ -105,13 +105,56 @@ void Parser::parse_next()
                     SymbolTableEntry(name, BASIC_TYPE_INT)
                 );
                 states.pop();
-                states.push(GET_VAR_DEF_WITHOUT_INIT);
+                states.push(GET_ONE_VAR_NAME_BUT_NO_INIT_PAIR);
                 this->lexer.restore_state(lexer_state);
                 return;
             }
             if (next_val == LPAREN)
             {
                 states.push(GET_INT_FUNC_DECLARE);
+                return;
+            }
+            fprintf(stderr, "Syntactical error: unexpected token %s "
+                    "at line %lu!\n", next_lexeme.to_str().c_str(),
+                    this->lexer.get_lineno());
+            this->error = 1;
+            return;
+        case GET_INT_NAME_FOR_VAR:
+            if (next_val == SEMICOLON ||
+                next_val == COMMA ||
+                next_val == ASSIGN ||
+                next_val == LINDEX)
+            {
+                /**
+                 * Add the symbol to symbol table.
+                 */
+                LexemePacker* top_symbol = (LexemePacker*)(symbols.top());
+                
+                /* Detect re-definition. */
+                std::string name(top_symbol->lexeme.lex_name);
+                if (symbol_table->get_entry_if_contains(name.c_str()) != nullptr)
+                {
+                    fprintf(stderr, "Semantic error: name '%s' "
+                            "redefined at line %lu!\n", name.c_str(),
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return;
+                }
+
+                symbol_table->add_entry(
+                    SymbolTableEntry(name, BASIC_TYPE_INT)
+                );
+                states.pop();
+                states.push(GET_ONE_VAR_NAME_BUT_NO_INIT_PAIR);
+                this->lexer.restore_state(lexer_state);
+                return;
+            }
+            if (next_val == LPAREN)
+            {
+                fprintf(stderr, "Syntactical error: expected an 'int' variable "
+                        "but got a function at line %lu!\n",
+                        this->lexer.get_lineno());
+                this->error = 1;
                 return;
             }
             fprintf(stderr, "Syntactical error: unexpected token %s "
@@ -141,7 +184,7 @@ void Parser::parse_next()
                     this->lexer.get_lineno());
             this->error = 1;
             return;
-        case GET_CONST_INT_DECLARE:
+        case GET_CONST_INT_NAME:
             if (next_val == ASSIGN ||
                 next_val == LINDEX)
             {
@@ -281,8 +324,107 @@ void Parser::parse_next()
             this->error = 1;
             return;
         case WAIT_FOR_VAR_INIT:
-            /* Before calling "parse_next_exp()", must restore lexer state. */
+            if (next_val == LBRACE)
+            {
+                states.push(WAIT_FOR_ARRAY_INIT);
+                return;
+            }
+            this->lexer.restore_state(lexer_state);
+            {
+                auto next_exp = parse_next_exp();
+                if (next_exp != nullptr)
+                {
+                    states.push(GET_EXP_AS_INIT);
+                    symbols.push(next_exp);
+                    return;
+                }
+            }
+            fprintf(stderr, "Syntactical error: expected an expression "
+                    "at line %lu!\n",
+                    this->lexer.get_lineno());
+            this->error = 1;
             return;
+        case WAIT_FOR_VAR_ARRAY_LEN:
+            this->lexer.restore_state(lexer_state);
+            {
+                auto next_exp = parse_next_exp();
+                if (next_exp == nullptr)
+                {
+                    fprintf(stderr, "Syntactical error: expected an expression "
+                            "at line %lu!\n",
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return;
+                }
+                /* Not a constant expression */
+                if (next_exp->symbol_idx != SYMBOL_NUMBER)
+                {
+                    fprintf(stderr, "Semantic error: expected a constant expression "
+                            "but got a variable expression at line %lu!\n",
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return;
+                }
+
+                states.push(GET_CONST_EXP_AS_LEN);
+                symbols.push(next_exp);
+                return;
+            }
+        case WAIT_FOR_CONST_INIT:
+            if (next_val == LBRACE)
+            {
+                states.push(WAIT_FOR_CONST_ARRAY_INIT);
+                return;
+            }
+            this->lexer.restore_state(lexer_state);
+            {
+                auto next_exp = parse_next_exp();
+                if (next_exp == nullptr)
+                {
+                    fprintf(stderr, "Syntactical error: expected an expression "
+                            "at line %lu!\n",
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return;
+                }
+                if (next_exp->symbol_idx != SYMBOL_NUMBER)
+                {
+                    fprintf(stderr, "Semantic error: expected a constant expression "
+                            "but got a variable expression at line %lu!\n",
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return;
+                }
+                states.push(GET_CONST_EXP_AS_CONST_INIT);
+                symbols.push(next_exp);
+                return;
+            }
+        case WAIT_FOR_CONST_ARRAY_LEN:
+            this->lexer.restore_state(lexer_state);
+            {
+                auto next_exp = parse_next_exp();
+                if (next_exp == nullptr)
+                {
+                    fprintf(stderr, "Syntactical error: expected an expression "
+                            "at line %lu!\n",
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return;
+                }
+                /* Not a constant expression */
+                if (next_exp->symbol_idx != SYMBOL_NUMBER)
+                {
+                    fprintf(stderr, "Semantic error: expected a constant expression "
+                            "but got a variable expression at line %lu!\n",
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return;
+                }
+
+                states.push(GET_CONST_EXP_AS_CONST_LEN);
+                symbols.push(next_exp);
+                return;
+            }
 
     }
 }

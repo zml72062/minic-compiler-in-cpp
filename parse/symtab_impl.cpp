@@ -1,6 +1,7 @@
 #include "symtab.h"
 #include <iostream>
 #include <string.h>
+#include "../utils.h"
 
 SymbolTable::SymbolTable()
 {
@@ -65,4 +66,17 @@ SymbolTableEntry* SymbolTable::get_entry_if_contains_in_tree(const char* _name)
         search_table = search_table->parent_scope();
     }
     return nullptr;
+}
+
+void SymbolTable::print_table()
+{
+    for (auto& entry: entries)
+    {
+        std::cout << entry.name << std::endl;
+        for (auto& v: entry.init_val)
+        {
+            std::cout << v << " ";
+        }
+        std::cout << std::endl;
+    }
 }
