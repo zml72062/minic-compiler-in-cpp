@@ -1,0 +1,110 @@
+#ifndef PARSER_H
+#define PARSER_H
+
+#include <stack>
+#include "../lex/lex.h"
+#include "symtab.h"
+#include "symbols.h"
+
+#define PROGRAM_START 0
+#define GET_CONST_WAIT_FOR_INT 1
+#define GET_INT_WAIT_FOR_IDENT 2
+#define GET_VOID_WAIT_FOR_IDENT 3
+#define GET_CONST_INT_WAIT_FOR_IDENT 4
+#define GET_INT_DECLARE 5
+#define GET_VOID_DECLARE 6
+#define GET_CONST_INT_DECLARE 7
+#define GET_VAR_DEF_WITHOUT_INIT 8
+#define GET_INT_FUNC_DECLARE 9
+#define GET_VOID_FUNC_DECLARE 10
+#define GET_CONST_DEF_WITHOUT_INIT 11
+#define DONT_KNOW_WHAT_NAME_IT_LATER_1 12
+#define GET_FULL_VAR_DEF_WITHOUT_SEMICOLON 13
+#define GET_ONE_MORE_FULL_VAR_DEF_WITHOUT_SEMICOLON 14
+#define WAIT_FOR_VAR_INIT 15
+#define WAIT_FOR_VAR_ARRAY_LEN 16
+#define GET_INT_ARG_TYPE 17
+#define GET_NON_ARG_WITH_RET_INT 18
+#define GET_NON_ARG_WITH_RET_VOID 19
+#define WAIT_FOR_CONST_INIT 20
+#define WAIT_FOR_CONST_ARRAY_LEN 21
+
+#define EXP_START 100000
+#define EXP_GET_IDENT 100001
+#define EXP_GET_LPAREN 100002
+#define EXP_GET_NUMBER 100003
+#define EXP_GET_POSITIVE 100004
+#define EXP_GET_NEGATIVE 100005
+#define EXP_GET_NOT 100006
+#define EXP_GET_LVAL 100007
+#define EXP_WANT_FUNC_CALL 100008
+#define EXP_GET_PRIMARY_EXP 100009
+#define EXP_WANT_LVAL_INDEXING 100010
+#define EXP_GET_OR 100011
+#define EXP_GET_TIMES 100012
+#define EXP_GET_DIVIDE 100013
+#define EXP_GET_MOD 100014
+#define EXP_GET_PLUS 100015
+#define EXP_GET_MINUS 100016
+#define EXP_GET_G 100017
+#define EXP_GET_GEQ 100018
+#define EXP_GET_L 100019
+#define EXP_GET_LEQ 100020
+#define EXP_GET_EQ 100021
+#define EXP_GET_NEQ 100022
+#define EXP_GET_AND 100023
+#define EXP_GET_UNARY_EXP_AFTER_POSITIVE 100024
+#define EXP_GET_UNARY_EXP_AFTER_NEGATIVE 100025
+#define EXP_GET_UNARY_EXP_AFTER_NOT 100026
+#define EXP_WANT_ADDITIONAL_ARGS 100027
+#define EXP_GET_UNARY_EXP_AFTER_TIMES 100028
+#define EXP_GET_UNARY_EXP_AFTER_DIVIDE 100029
+#define EXP_GET_UNARY_EXP_AFTER_MOD 100030
+#define EXP_GET_UNARY_EXP 100031
+#define EXP_GET_MUL_EXP_AFTER_ADD 100032
+#define EXP_GET_MUL_EXP_AFTER_MINUS 100033
+#define EXP_GET_MUL_EXP 100034
+#define EXP_GET_ADD_EXP_AFTER_G 100035
+#define EXP_GET_ADD_EXP_AFTER_GEQ 100036
+#define EXP_GET_ADD_EXP_AFTER_L 100037
+#define EXP_GET_ADD_EXP_AFTER_LEQ 100038
+#define EXP_GET_ADD_EXP 100039
+#define EXP_GET_REL_EXP_AFTER_EQ 100040
+#define EXP_GET_REL_EXP_AFTER_NEQ 100041
+#define EXP_GET_REL_EXP 100042
+#define EXP_GET_EQ_EXP_AFTER_AND 100043
+#define EXP_GET_EQ_EXP 100044
+#define EXP_GET_AND_EXP_AFTER_OR 100045
+#define EXP_GET_AND_EXP 100046
+#define EXP_GET_OR_EXP 100047
+#define EXP_SUCCEED 100048
+#define EXP_GET_HALF_BRACKETED_EXP 100049 
+#define EXP_GET_HALF_LVAL_INDEXING_EXP 100050
+#define EXP_GET_ONE_ARG 100051
+#define EXP_GET_ONE_MORE_ARG 100052
+#define EXP_GET_FUNC_CALL_WITHOUT_ARGS 100053
+#define EXP_GET_FUNC_CALL_WITH_ARGS 100054
+#define EXP_GET_BRACKETED_EXP 100055
+#define EXP_GET_LVAL_INDEXING_EXP 100056
+#define EXP_WANT_OPTIONALLY_MORE_ARGS 100057
+
+extern SymbolTable* symbol_table;
+
+class Parser
+{
+private:
+    std::stack<int> states;
+    std::stack<void*> symbols; /* Store malloced pointers to symbols */
+    Lexer lexer;
+    int error;
+    int cur_state();
+    int parse_exp_next_step(std::stack<int>& _states, 
+                            std::stack<void*>& _symbols);
+public:
+    Parser(const char* code);
+    ~Parser();
+    void parse_next();
+    Symbol* parse_next_exp();
+};
+
+#endif
