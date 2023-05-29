@@ -117,7 +117,7 @@ IndexExpression::IndexExpression(Symbol* _loperand, Symbol* _roperand): Symbol()
     _roperand->parent = this;
 }
 
-ArrayInitialization::ArrayInitialization(const std::vector<std::size_t>& _sizes)
+ArrayInitialization::ArrayInitialization(const std::vector<std::size_t>& _sizes): Symbol()
 {
     this->symbol_idx = SYMBOL_ARR_INIT;
     this->sizes = _sizes;
@@ -184,6 +184,79 @@ std::vector<int> ArrayInitialization::to_vector()
     return res_array;
 }
 
+ExpArrayInitialization::ExpArrayInitialization(const std::vector<std::size_t>& _sizes): Symbol()
+{
+    this->symbol_idx = SYMBOL_EXP_ARR_INIT;
+    this->sizes = _sizes;
+}
+
+void ExpArrayInitialization::add_subvalue(Symbol* _symbol)
+{
+    this->children.push_back(_symbol);
+    _symbol->parent = this;
+}
+
+std::vector<Symbol*> ExpArrayInitialization::to_vector()
+{
+    std::size_t dim = sizes.size();
+    std::vector<std::size_t> mul_sizes(dim, 1);
+    for (auto i = dim - 1; i > 0; i--)
+    {
+        mul_sizes[i - 1] = mul_sizes[i] * sizes[i];
+    }
+    std::size_t full_size = mul_sizes[0] * sizes[0], cur_idx = 0;
+    std::vector<Symbol*> res_array(full_size);
+
+    for (auto& child : children)
+    {
+        if (child->symbol_idx == SYMBOL_EXP_ARR_INIT)
+        {
+            size_t i = 0;
+            for (; i < dim; i++)
+                if (cur_idx % mul_sizes[i] == 0)
+                    break;
+            ExpArrayInitialization* as_array = (ExpArrayInitialization*)child;
+            std::vector<std::size_t> used_sizes(sizes.begin() + (i + 1),
+                                                sizes.end());
+            if (used_sizes.size() == 0)
+            {
+                if (cur_idx == full_size)
+                    return res_array;
+                res_array[cur_idx++] = as_array->to_vector()[0];
+            }
+            else
+            {
+                as_array->sizes = used_sizes;
+                auto subarray = as_array->to_vector();
+                auto subarray_size = subarray.size();
+                for (auto i = 0; i < subarray_size; i++)
+                {
+                    if (cur_idx == full_size)
+                        return res_array;
+                    res_array[cur_idx++] = subarray[i];
+                }
+            }
+        }
+        else
+        {
+            if (cur_idx == full_size)
+                return res_array;
+            res_array[cur_idx++] = child;
+        }
+    }
+    for (; cur_idx < full_size; cur_idx++)
+    {
+        res_array[cur_idx] = new Number(std::vector<std::size_t>(), std::vector<int>({0}));
+    }
+    return res_array;
+}
+
+ExpArray::ExpArray(const std::vector<std::size_t>& _sizes, const std::vector<Symbol*>& _value): Symbol()
+{
+    this->symbol_idx = SYMBOL_EXP_ARR;
+    this->sizes = _sizes;
+    this->value = _value;
+}
 
 LexemePacker* LexemePacker::copy()
 {
@@ -255,6 +328,16 @@ ArrayInitialization* ArrayInitialization::copy()
     return new ArrayInitialization(*this);
 }
 
+ExpArrayInitialization* ExpArrayInitialization::copy()
+{
+    return new ExpArrayInitialization(*this);
+}
+
+ExpArray* ExpArray::copy()
+{
+    return new ExpArray(*this);
+}
+
 std::string Symbol::to_str()
 {
     return std::string();
@@ -286,6 +369,8 @@ std::string Number::to_str()
 {
     if (this->sizes.size() == 0)
     {
+        if (this->value.size() == 0)
+            return std::string();
         return std::to_string(this->value[0]);
     }
     std::string val_str = "{";
@@ -409,11 +494,48 @@ std::string ArrayInitialization::to_str()
     return array_type_to_str(this->sizes) + val_str + "}";
 }
 
+std::string ExpArrayInitialization::to_str()
+{
+    std::string val_str = "{";
+    std::vector<Symbol*> value = this->to_vector();
+    for (auto& val: value)
+    {
+        val_str += (val->to_str() + ", ");
+    }
+    return array_type_to_str(this->sizes) + val_str + "}";
+}
+
+std::string ExpArray::to_str()
+{
+    if (this->sizes.size() == 0)
+    {
+        if (this->value.size() == 0)
+            return std::string();
+        return this->value[0]->to_str();
+    }
+    std::string val_str = "{";
+    for (auto& val: this->value)
+    {
+        val_str += (val->to_str() + ", ");
+    }
+    return array_type_to_str(this->sizes) + val_str + "}";
+}
+
 void clear(Symbol* symbol)
 {
     for (auto& child: symbol->children)
     {
         clear(child);
+    }
+    delete symbol;
+}
+
+void clear_exp_arr_init(ExpArrayInitialization* symbol)
+{
+    for (auto& child: symbol->children)
+    {
+        if (child->symbol_idx == SYMBOL_EXP_ARR_INIT)
+            clear_exp_arr_init((ExpArrayInitialization*)child);
     }
     delete symbol;
 }

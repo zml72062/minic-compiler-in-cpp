@@ -115,6 +115,28 @@
 #define CONST_DECL_GET_NON_EMPTY_ARR_INIT_VAL 200020
 #define CONST_DECL_WAIT_FOR_OPTIONALLY_MORE_INIT_VAL 200021
 
+#define VAR_DECL_START 300000
+#define VAR_DECL_GET_INT 300001
+#define VAR_DECL_GET_INT_IDENT 300002
+#define VAR_DECL_GET_VAR_NAME 300003
+#define VAR_DECL_WAIT_FOR_INIT_VAL 300004
+#define VAR_DECL_WAIT_FOR_ARR_LEN 300005
+#define VAR_DECL_GET_FIRST_DECL 300006
+#define VAR_DECL_WAIT_FOR_ONE_MORE_DECL 300007
+#define VAR_DECL_GET_ONE_MORE_DECL 300008
+#define VAR_DECL_WAIT_FOR_ARR_INIT_VAL 300009
+#define VAR_DECL_GET_SCALAR_INIT_VAL 300010
+#define VAR_DECL_GET_ARR_LEN 300011
+#define VAR_DECL_GET_EMPTY_ARR_INIT_VAL 300012
+#define VAR_DECL_GET_ARR_TYPE_SUFFIX 300013
+#define VAR_DECL_GET_ONE_VAR_DEF 300014
+#define VAR_DECL_GET_FIRST_ARR_INIT_VAL 300015
+#define VAR_DECL_GET_MORE_INIT_VAL 300016
+#define VAR_DECL_GET_ONE_MORE_INIT_VAL 300017
+#define VAR_DECL_SUCCEED 300018
+#define VAR_DECL_WAIT_FOR_OPTIONALLY_MORE_INIT_VAL 300019
+#define VAR_DECL_GET_NON_EMPTY_ARR_INIT_VAL 300020
+
 extern SymbolTable* symbol_table;
 
 class Parser
@@ -129,12 +151,15 @@ private:
                             std::stack<void*>& _symbols);
     int parse_const_decl_next_step(std::stack<int>& _states, 
                                    std::stack<void*>& _symbols);
+    int parse_var_decl_next_step(std::stack<int>& _states, 
+                                 std::stack<void*>& _symbols);
 public:
     Parser(const char* code);
     ~Parser();
     void parse_next();
     Symbol* parse_next_exp();
     int parse_next_const_decl();
+    int parse_next_var_decl();
 };
 
 #endif

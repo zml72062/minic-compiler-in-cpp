@@ -18,6 +18,8 @@
 #define SYMBOL_OR 9
 #define SYMBOL_INDEX 10
 #define SYMBOL_ARR_INIT 11
+#define SYMBOL_EXP_ARR_INIT 12
+#define SYMBOL_EXP_ARR 13
 
 struct Symbol
 {
@@ -155,6 +157,27 @@ struct ArrayInitialization: public Symbol
     virtual std::string to_str();
 };
 
+struct ExpArrayInitialization: public Symbol
+{
+    std::vector<std::size_t> sizes;
+    ExpArrayInitialization(const std::vector<std::size_t>& _sizes);
+    void add_subvalue(Symbol* _symbol);
+    std::vector<Symbol*> to_vector();
+    virtual ExpArrayInitialization* copy();
+    virtual std::string to_str();
+};
+
+struct ExpArray: public Symbol
+{
+    std::vector<std::size_t> sizes;
+    std::vector<Symbol*> value;
+    ExpArray(const std::vector<std::size_t>& _sizes,
+             const std::vector<Symbol*>& _value);
+    virtual ExpArray* copy();
+    virtual std::string to_str();
+};
+
 void clear(Symbol* symbol);
+void clear_exp_arr_init(ExpArrayInitialization* symbol);
 
 #endif

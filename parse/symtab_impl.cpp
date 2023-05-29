@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string.h>
 #include "../utils.h"
+#include "symbols.h"
 
 SymbolTable::SymbolTable()
 {
@@ -24,7 +25,7 @@ SymbolTable* SymbolTable::create_subscope()
 
 void SymbolTable::add_entry(const SymbolTableEntry& entry)
 {
-    this->entries.push_back(entry);
+    this->entries.push_back(new SymbolTableEntry(entry));
 }
 
 SymbolTable::~SymbolTable()
@@ -32,6 +33,10 @@ SymbolTable::~SymbolTable()
     for (auto& subscope : this->subscopes)
     {
         delete subscope;
+    }
+    for (auto& entry : this->entries)
+    {
+        delete entry;
     }
 }
 
@@ -43,9 +48,9 @@ SymbolTableEntry* SymbolTable::get_entry_if_contains(const char* _name)
 {
     for (auto& entry: this->entries)
     {
-        if (!strcmp(_name, entry.name.c_str()))
+        if (!strcmp(_name, entry->name.c_str()))
         {
-            return &entry;
+            return entry;
         }
     }
     return nullptr;
@@ -72,11 +77,12 @@ void SymbolTable::print_table()
 {
     for (auto& entry: entries)
     {
-        std::cout << entry.name << std::endl;
-        for (auto& v: entry.init_val)
-        {
-            std::cout << v << " ";
-        }
-        std::cout << std::endl;
+        std::cout << entry->name << std::endl;
+        std::cout << Number(entry->type.array_lengths, entry->init_val).to_str() << std::endl;
+        auto size = entry->init_exp.size();
+        std::vector<Symbol*> value_cast(size);
+        for (auto i = 0; i < size; i++)
+            value_cast[i] = (Symbol*)(entry->init_exp[i]);
+        std::cout << ExpArray(entry->type.array_lengths, value_cast).to_str() << std::endl;
     }
 }

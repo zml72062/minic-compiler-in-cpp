@@ -51,7 +51,7 @@ class SymbolTable
 private:
     SymbolTable* parent;
     std::vector<SymbolTable*> subscopes;
-    std::vector<SymbolTableEntry> entries;
+    std::vector<SymbolTableEntry*> entries;
 public:
     SymbolTable();
     ~SymbolTable();

@@ -140,6 +140,24 @@ int Parser::parse_const_decl_next_step(std::stack<int>& _states,
             }
             this->lexer.restore_state(lexer_state);
             {
+                LexemePacker* ident_top = (LexemePacker*)(_symbols.top());
+                std::string name(ident_top->lexeme.lex_name);
+                auto entry = symbol_table->get_entry_if_contains(name.c_str());
+                if (entry == nullptr)
+                {
+                    this->error = 1;
+                    return -1;
+                }
+                auto& array_lengths = entry->type.array_lengths;
+                if (array_lengths.size() > 0)
+                {
+                    fprintf(stderr, "Semantic error: got a scalar value "
+                            "for the initialization of array variable '%s' "
+                            "at line %lu!\n", name.c_str(),
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return -1;
+                }
                 auto next_exp = this->parse_next_exp();
                 if (next_exp == nullptr)
                 {
@@ -157,7 +175,6 @@ int Parser::parse_const_decl_next_step(std::stack<int>& _states,
                     this->error = 1;
                     return -1;
                 }
-                _symbols.top();
                 _states.push(CONST_DECL_GET_SCALAR_INIT_VAL);
                 _symbols.push((Number*)(next_exp));
                 return 0;
@@ -265,6 +282,14 @@ int Parser::parse_const_decl_next_step(std::stack<int>& _states,
                     return -1;   
                 }
                 int arr_len = arr_type_len->value[0];
+                if (arr_len < 0)
+                {
+                    fprintf(stderr, "Semantic error: value %d "
+                            "cannot be the length of an array at line %lu!\n",
+                            arr_len, this->lexer.get_lineno());
+                    this->error = 1;
+                    return -1;
+                }
                 delete (Symbol*)(_symbols.top());
                 _symbols.pop();
 
