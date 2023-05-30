@@ -8,16 +8,20 @@
 #define BASIC_TYPE_INT 0
 #define BASIC_TYPE_CONST_INT 1
 #define BASIC_TYPE_FUNC 2
+#define BASIC_TYPE_NONE 3
 
 struct Type
 {
     int basic_type;
     std::vector<std::size_t> array_lengths;
+    std::vector<Type> ret_and_arg_types;
 
     Type();
     ~Type();
     Type(int _basic_type);
+    Type(int _basic_type, const std::vector<std::size_t>& _arr_lengths);
     void create_array_type(std::size_t len);
+    void add_ret_or_arg_type(const Type& _type);
     std::string to_str();
 };
 

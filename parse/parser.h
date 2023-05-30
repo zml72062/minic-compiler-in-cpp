@@ -196,6 +196,8 @@ private:
                                  std::stack<void*>& _symbols);
     int parse_block_next_step(std::stack<int>& _states,
                               std::stack<void*>& _symbols);
+    int parse_funcdef_next_step(std::stack<int>& _states,
+                                std::stack<void*>& _symbols);
     std::pair<int, int> parse_next_const_decl();
     std::pair<int, int> parse_next_var_decl();
 public:
@@ -205,6 +207,7 @@ public:
     Symbol* parse_next_exp();
     std::pair<int, int> parse_next_decl();
     Symbol* parse_next_block();
+    int parse_next_funcdef();
 };
 
 #endif

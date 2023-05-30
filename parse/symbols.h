@@ -42,6 +42,7 @@ struct Symbol
     virtual Symbol* copy();
     virtual std::string to_str();
     virtual bool is_lval();
+    virtual Type type();
 };
 
 struct LexemePacker: public Symbol
@@ -51,6 +52,7 @@ struct LexemePacker: public Symbol
     virtual LexemePacker* copy();
     virtual std::string to_str();
     virtual bool is_lval();
+    virtual Type type();
 };
 
 struct Variable: public Symbol
@@ -60,6 +62,7 @@ struct Variable: public Symbol
     virtual Variable* copy();
     virtual std::string to_str();
     virtual bool is_lval();
+    virtual Type type();
 };
 
 struct Function: public Symbol
@@ -69,7 +72,7 @@ struct Function: public Symbol
     void add_argument(Symbol* _symbol);
     virtual Function* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 struct Number: public Symbol /* Including compile-time constants. */
@@ -80,7 +83,7 @@ struct Number: public Symbol /* Including compile-time constants. */
            const std::vector<int>& _value);
     virtual Number* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 #define UNARY_EXP_OPERATOR_PLUS 0
@@ -93,7 +96,7 @@ struct UnaryExpression: public Symbol
     UnaryExpression(int _operation, Symbol* _operand);
     virtual UnaryExpression* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 #define MUL_EXP_OPERATOR_TIMES 0
@@ -106,7 +109,7 @@ struct MulExpression: public Symbol
     MulExpression(int _operation, Symbol* _loperand, Symbol* _roperand);
     virtual MulExpression* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 #define ADD_EXP_OPERATOR_PLUS 0
@@ -118,7 +121,7 @@ struct AddExpression: public Symbol
     AddExpression(int _operation, Symbol* _loperand, Symbol* _roperand);
     virtual AddExpression* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 #define REL_EXP_OPERATOR_G 0
@@ -132,7 +135,7 @@ struct RelExpression: public Symbol
     RelExpression(int _operation, Symbol* _loperand, Symbol* _roperand);
     virtual RelExpression* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 #define EQ_EXP_OPERATOR_EQ 0
@@ -144,7 +147,7 @@ struct EqExpression: public Symbol
     EqExpression(int _operation, Symbol* _loperand, Symbol* _roperand);
     virtual EqExpression* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 struct AndExpression: public Symbol
@@ -152,7 +155,7 @@ struct AndExpression: public Symbol
     AndExpression(Symbol* _loperand, Symbol* _roperand);
     virtual AndExpression* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 struct OrExpression: public Symbol
@@ -160,7 +163,7 @@ struct OrExpression: public Symbol
     OrExpression(Symbol* _loperand, Symbol* _roperand);
     virtual OrExpression* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 struct IndexExpression: public Symbol
@@ -169,6 +172,7 @@ struct IndexExpression: public Symbol
     virtual IndexExpression* copy();
     virtual std::string to_str();
     virtual bool is_lval();
+    virtual Type type();
 };
 
 struct ArrayInitialization: public Symbol
@@ -179,7 +183,6 @@ struct ArrayInitialization: public Symbol
     std::vector<int> to_vector();
     virtual ArrayInitialization* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct ExpArrayInitialization: public Symbol
@@ -190,7 +193,6 @@ struct ExpArrayInitialization: public Symbol
     std::vector<Symbol*> to_vector();
     virtual ExpArrayInitialization* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct ExpArray: public Symbol
@@ -201,7 +203,7 @@ struct ExpArray: public Symbol
              const std::vector<Symbol*>& _value);
     virtual ExpArray* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
+    virtual Type type();
 };
 
 struct Block: public Symbol
@@ -210,7 +212,6 @@ struct Block: public Symbol
     void add_statement(Symbol* _stmt);
     virtual Block* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct EmptyStatement: public Symbol
@@ -218,7 +219,6 @@ struct EmptyStatement: public Symbol
     EmptyStatement();
     virtual EmptyStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct IfStatement: public Symbol
@@ -226,7 +226,6 @@ struct IfStatement: public Symbol
     IfStatement(Symbol* _expr, Symbol* _stmt);
     virtual IfStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct IfElseStatement: public Symbol
@@ -234,7 +233,6 @@ struct IfElseStatement: public Symbol
     IfElseStatement(Symbol* _expr, Symbol* _stmt_if, Symbol* _stmt_else);
     virtual IfElseStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct WhileStatement: public Symbol
@@ -242,7 +240,6 @@ struct WhileStatement: public Symbol
     WhileStatement(Symbol* _expr, Symbol* _stmt);
     virtual WhileStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct ReturnNoneStatement: public Symbol
@@ -250,7 +247,6 @@ struct ReturnNoneStatement: public Symbol
     ReturnNoneStatement();
     virtual ReturnNoneStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct ReturnValueStatement: public Symbol
@@ -258,7 +254,6 @@ struct ReturnValueStatement: public Symbol
     ReturnValueStatement(Symbol* _retval);
     virtual ReturnValueStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct BreakStatement: public Symbol
@@ -266,7 +261,6 @@ struct BreakStatement: public Symbol
     BreakStatement();
     virtual BreakStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct ContinueStatement: public Symbol
@@ -274,7 +268,6 @@ struct ContinueStatement: public Symbol
     ContinueStatement();
     virtual ContinueStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct AssignStatement: public Symbol
@@ -282,7 +275,6 @@ struct AssignStatement: public Symbol
     AssignStatement(Symbol* _lval, Symbol* _rval);
     virtual AssignStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 struct ExpressionStatement: public Symbol
@@ -290,7 +282,6 @@ struct ExpressionStatement: public Symbol
     ExpressionStatement(Symbol* _expr);
     virtual ExpressionStatement* copy();
     virtual std::string to_str();
-    virtual bool is_lval();
 };
 
 

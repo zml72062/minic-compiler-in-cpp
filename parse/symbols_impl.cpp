@@ -748,112 +748,78 @@ bool Variable::is_lval()
     return true;
 }
 
-bool Function::is_lval()
-{
-    return false;
-}
-
-bool Number::is_lval()
-{
-    return false;
-}
-
-bool UnaryExpression::is_lval()
-{
-    return false;
-}
-
-bool MulExpression::is_lval()
-{
-    return false;
-}
-
-bool AddExpression::is_lval()
-{
-    return false;
-}
-
-bool RelExpression::is_lval()
-{
-    return false;
-}
-
-bool EqExpression::is_lval()
-{
-    return false;
-}
-
-bool AndExpression::is_lval()
-{
-    return false;
-}
-
-bool OrExpression::is_lval()
-{
-    return false;
-}
-
 bool IndexExpression::is_lval()
 {
     return this->children[0]->is_lval();
 }
 
-bool ArrayInitialization::is_lval()
+Type Symbol::type()
 {
-    return false;
+    return Type(BASIC_TYPE_NONE);
 }
 
-bool ExpArrayInitialization::is_lval()
+Type LexemePacker::type()
 {
-    return false;
+    if (this->lexeme.lex_type == NUMBERS)
+    {
+        return Type(BASIC_TYPE_INT);
+    }
+    return Type(BASIC_TYPE_NONE);
 }
 
-bool ExpArray::is_lval()
+Type Variable::type()
 {
-    return false;
+    return this->entry->type;
 }
 
-bool Block::is_lval()
+Type Function::type()
 {
-    return false;
+    /* Return value type. */
+    return this->entry->type.ret_and_arg_types[0];
 }
-bool EmptyStatement::is_lval()
+
+Type Number::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT, this->sizes);
 }
-bool IfStatement::is_lval()
+
+Type UnaryExpression::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT);
 }
-bool IfElseStatement::is_lval()
+Type MulExpression::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT);
 }
-bool ReturnNoneStatement::is_lval()
+Type AddExpression::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT);
 }
-bool ReturnValueStatement::is_lval()
+Type RelExpression::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT);
 }
-bool AssignStatement::is_lval()
+Type EqExpression::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT);
 }
-bool ExpressionStatement::is_lval()
+Type AndExpression::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT);
 }
-bool WhileStatement::is_lval()
+Type OrExpression::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT);
 }
-bool BreakStatement::is_lval()
+Type IndexExpression::type()
 {
-    return false;
+    auto lval_type = this->children[0]->type();
+    return Type(lval_type.basic_type,
+                std::vector<std::size_t>(lval_type.array_lengths.begin() + 1,
+                                         lval_type.array_lengths.end()));
 }
-bool ContinueStatement::is_lval()
+
+Type ExpArray::type()
 {
-    return false;
+    return Type(BASIC_TYPE_INT, this->sizes);
 }

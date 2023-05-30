@@ -167,6 +167,18 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
             this->lexer.restore_state(lexer_state);
             return 0;
         case EXP_GET_FUNC_CALL_WITH_ARGS:
+            {
+                Function* func_top = (Function*)(_symbols.top());
+                if (func_top->entry->type.ret_and_arg_types.size() !=
+                    func_top->children.size() + 1)
+                {
+                    fprintf(stderr, "Semantic error: function %s got a wrong number of "
+                            "arguments at line %lu!\n", func_top->entry->name.c_str(),
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return -1;
+                }
+            }
             _states.pop();
             _states.pop();
             _states.pop();
@@ -201,6 +213,18 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
             this->lexer.restore_state(lexer_state);
             return 0;
         case EXP_GET_FUNC_CALL_WITHOUT_ARGS:
+            {
+                Function* func_top = (Function*)(_symbols.top());
+                if (func_top->entry->type.ret_and_arg_types.size() !=
+                    func_top->children.size() + 1)
+                {
+                    fprintf(stderr, "Semantic error: function %s got a wrong number of "
+                            "arguments at line %lu!\n", func_top->entry->name.c_str(),
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return -1;
+                }
+            }
             _states.pop();
             _states.pop();
             _states.pop();
@@ -257,7 +281,38 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new UnaryExpression(UNARY_EXP_OPERATOR_PLUS, copy_top_symbol));
+                    auto type = copy_top_symbol->type();
+                    if (type.array_lengths.size() == 0 &&
+                        (type.basic_type == BASIC_TYPE_CONST_INT ||
+                        type.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new UnaryExpression(UNARY_EXP_OPERATOR_PLUS, copy_top_symbol));
+                    }
+                    else
+                    {
+                        if (type.basic_type == BASIC_TYPE_NONE)
+                        {
+                            fprintf(stderr, "Semantic error: value type 'void' is incompatible "
+                                    "with the operator '+' at line %lu!\n", 
+                                    this->lexer.get_lineno());
+                            this->error = 1;
+                            return -1;
+                        }
+                        if (type.basic_type == BASIC_TYPE_FUNC)
+                        {
+                            fprintf(stderr, "Semantic error: value type 'func' is incompatible "
+                                    "with the operator '+' at line %lu!\n", 
+                                    this->lexer.get_lineno());
+                            this->error = 1;
+                            return -1;
+                        }
+                        fprintf(stderr, "Semantic error: value type '%s' is incompatible "
+                                "with the operator '+' at line %lu!\n", 
+                                array_type_to_str(type.array_lengths).c_str(),
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -316,7 +371,38 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new UnaryExpression(UNARY_EXP_OPERATOR_MINUS, copy_top_symbol));
+                    auto type = copy_top_symbol->type();
+                    if (type.array_lengths.size() == 0 &&
+                        (type.basic_type == BASIC_TYPE_CONST_INT ||
+                        type.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new UnaryExpression(UNARY_EXP_OPERATOR_MINUS, copy_top_symbol));
+                    }
+                    else
+                    {
+                        if (type.basic_type == BASIC_TYPE_NONE)
+                        {
+                            fprintf(stderr, "Semantic error: value type 'void' is incompatible "
+                                    "with the operator '-' at line %lu!\n", 
+                                    this->lexer.get_lineno());
+                            this->error = 1;
+                            return -1;
+                        }
+                        if (type.basic_type == BASIC_TYPE_FUNC)
+                        {
+                            fprintf(stderr, "Semantic error: value type 'func' is incompatible "
+                                    "with the operator '-' at line %lu!\n", 
+                                    this->lexer.get_lineno());
+                            this->error = 1;
+                            return -1;
+                        }
+                        fprintf(stderr, "Semantic error: value type '%s' is incompatible "
+                                "with the operator '-' at line %lu!\n", 
+                                array_type_to_str(type.array_lengths).c_str(),
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -375,7 +461,38 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new UnaryExpression(UNARY_EXP_OPERATOR_NOT, copy_top_symbol));
+                    auto type = copy_top_symbol->type();
+                    if (type.array_lengths.size() == 0 &&
+                        (type.basic_type == BASIC_TYPE_CONST_INT ||
+                        type.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new UnaryExpression(UNARY_EXP_OPERATOR_NOT, copy_top_symbol));
+                    }
+                    else
+                    {
+                        if (type.basic_type == BASIC_TYPE_NONE)
+                        {
+                            fprintf(stderr, "Semantic error: value type 'void' is incompatible "
+                                    "with the operator '!' at line %lu!\n", 
+                                    this->lexer.get_lineno());
+                            this->error = 1;
+                            return -1;
+                        }
+                        if (type.basic_type == BASIC_TYPE_FUNC)
+                        {
+                            fprintf(stderr, "Semantic error: value type 'func' is incompatible "
+                                    "with the operator '!' at line %lu!\n", 
+                                    this->lexer.get_lineno());
+                            this->error = 1;
+                            return -1;
+                        }
+                        fprintf(stderr, "Semantic error: value type '%s' is incompatible "
+                                "with the operator '!' at line %lu!\n", 
+                                array_type_to_str(type.array_lengths).c_str(),
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -458,8 +575,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new MulExpression(MUL_EXP_OPERATOR_TIMES,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new MulExpression(MUL_EXP_OPERATOR_TIMES,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '*' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -503,8 +638,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new MulExpression(MUL_EXP_OPERATOR_DIVIDE,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new MulExpression(MUL_EXP_OPERATOR_DIVIDE,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '/' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -548,8 +701,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new MulExpression(MUL_EXP_OPERATOR_MOD,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new MulExpression(MUL_EXP_OPERATOR_MOD,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '%%' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -642,8 +813,27 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new AddExpression(ADD_EXP_OPERATOR_PLUS,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new AddExpression(ADD_EXP_OPERATOR_PLUS,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '+' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
+
                 }
             }
             _states.pop();
@@ -695,8 +885,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new AddExpression(ADD_EXP_OPERATOR_MINUS,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new AddExpression(ADD_EXP_OPERATOR_MINUS,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '-' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -772,8 +980,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new RelExpression(REL_EXP_OPERATOR_G,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new RelExpression(REL_EXP_OPERATOR_G,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '>' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -820,8 +1046,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new RelExpression(REL_EXP_OPERATOR_GEQ,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new RelExpression(REL_EXP_OPERATOR_GEQ,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '>=' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -868,8 +1112,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new RelExpression(REL_EXP_OPERATOR_L,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new RelExpression(REL_EXP_OPERATOR_L,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '<' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -916,8 +1178,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new RelExpression(REL_EXP_OPERATOR_LEQ,
-                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new RelExpression(REL_EXP_OPERATOR_LEQ,
+                                                        copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '<=' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -1010,8 +1290,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new EqExpression(EQ_EXP_OPERATOR_EQ,
-                                                   copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new EqExpression(EQ_EXP_OPERATOR_EQ,
+                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '==' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -1068,8 +1366,26 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new EqExpression(EQ_EXP_OPERATOR_NEQ,
-                                                   copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new EqExpression(EQ_EXP_OPERATOR_NEQ,
+                                                    copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '!=' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -1142,7 +1458,25 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new AndExpression(copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new AndExpression(copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '&&' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -1194,7 +1528,25 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new OrExpression(copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() == 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new OrExpression(copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '||' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -1279,7 +1631,25 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 }
                 else
                 {
-                    _symbols.push(new IndexExpression(copy_top_symbol_l, copy_top_symbol_r));
+                    auto type_l = copy_top_symbol_l->type();
+                    auto type_r = copy_top_symbol_r->type();
+                    if (type_l.array_lengths.size() > 0 &&
+                        (type_l.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_l.basic_type == BASIC_TYPE_INT) &&
+                        type_r.array_lengths.size() == 0 &&
+                        (type_r.basic_type == BASIC_TYPE_CONST_INT ||
+                        type_r.basic_type == BASIC_TYPE_INT))
+                    {
+                        _symbols.push(new IndexExpression(copy_top_symbol_l, copy_top_symbol_r));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic error: value types are incompatible "
+                                "with the operator '[]' at line %lu!\n", 
+                                this->lexer.get_lineno());
+                        this->error = 1;
+                        return -1;
+                    }
                 }
             }
             _states.pop();
@@ -1309,7 +1679,37 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 delete (Symbol*)(_symbols.top());
                 _symbols.pop();
                 Function* copy_top_func = (Function*)(_symbols.top());
-                copy_top_func->add_argument(copy_top_arg);
+
+                auto index_arg = copy_top_func->children.size() + 1;
+                auto rtype = copy_top_arg->type();
+                if (index_arg >= copy_top_func->entry->type.ret_and_arg_types.size())
+                {
+                    fprintf(stderr, "Semantic error: function %s got a wrong number of "
+                            "arguments at line %lu!\n", copy_top_func->entry->name.c_str(),
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return -1; 
+                }
+                auto dtype = copy_top_func->entry->type.ret_and_arg_types[index_arg];
+                if (dtype.array_lengths.size() == rtype.array_lengths.size() &&
+                    (dtype.array_lengths.size() == 0 ||
+                    std::vector<std::size_t>(dtype.array_lengths.begin() + 1,
+                                             dtype.array_lengths.end()) == 
+                    std::vector<std::size_t>(rtype.array_lengths.begin() + 1,
+                                             rtype.array_lengths.end())) &&                      
+                    (rtype.basic_type == BASIC_TYPE_INT || 
+                    rtype.basic_type == BASIC_TYPE_CONST_INT))
+                {
+                    copy_top_func->add_argument(copy_top_arg);
+                }
+                else
+                {
+                    fprintf(stderr, "Semantic error: incompatible argument type "
+                            "for the function call at line %lu!\n", 
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return -1;
+                }
 
                 _states.pop();
                 _states.push(EXP_WANT_OPTIONALLY_MORE_ARGS);
@@ -1337,7 +1737,37 @@ int Parser::parse_exp_next_step(std::stack<int>& _states,
                 delete (Symbol*)(_symbols.top());
                 _symbols.pop();
                 Function* copy_top_func = (Function*)(_symbols.top());
-                copy_top_func->add_argument(copy_top_arg);
+
+                auto index_arg = copy_top_func->children.size() + 1;
+                auto rtype = copy_top_arg->type();
+                if (index_arg >= copy_top_func->entry->type.ret_and_arg_types.size())
+                {
+                    fprintf(stderr, "Semantic error: function %s got a wrong number of "
+                            "arguments at line %lu!\n", copy_top_func->entry->name.c_str(),
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return -1; 
+                }
+                auto dtype = copy_top_func->entry->type.ret_and_arg_types[index_arg];
+                if (dtype.array_lengths.size() == rtype.array_lengths.size() &&
+                    (dtype.array_lengths.size() == 0 ||
+                    std::vector<std::size_t>(dtype.array_lengths.begin() + 1,
+                                             dtype.array_lengths.end()) == 
+                    std::vector<std::size_t>(rtype.array_lengths.begin() + 1,
+                                             rtype.array_lengths.end())) &&                      
+                    (rtype.basic_type == BASIC_TYPE_INT || 
+                    rtype.basic_type == BASIC_TYPE_CONST_INT))
+                {
+                    copy_top_func->add_argument(copy_top_arg);
+                }
+                else
+                {
+                    fprintf(stderr, "Semantic error: incompatible argument type "
+                            "for the function call at line %lu!\n", 
+                            this->lexer.get_lineno());
+                    this->error = 1;
+                    return -1;
+                }
 
                 _states.pop();
                 _states.pop();
