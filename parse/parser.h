@@ -5,6 +5,7 @@
 #include "../lex/lex.h"
 #include "symtab.h"
 #include "symbols.h"
+#include <utility>
 
 #define PROGRAM_START 0
 #define GET_CONST_WAIT_FOR_INT 1
@@ -137,6 +138,46 @@
 #define VAR_DECL_WAIT_FOR_OPTIONALLY_MORE_INIT_VAL 300019
 #define VAR_DECL_GET_NON_EMPTY_ARR_INIT_VAL 300020
 
+#define BLOCK_START_BLOCK 400000
+#define BLOCK_ENABLE_NEW_BLOCK 400001
+#define BLOCK_GET_EMPTY_BLOCK 400002
+#define BLOCK_GET_EMPTY_STMT 400003
+#define BLOCK_GET_WHILE 400004
+#define BLOCK_GET_IF 400005
+#define BLOCK_GET_CONTINUE 400006
+#define BLOCK_GET_BREAK 400007
+#define BLOCK_GET_RETURN 400008
+#define BLOCK_GET_DECL 400009
+#define BLOCK_GET_LVAL 400010
+#define BLOCK_GET_LVAL_ASSIGN 400011
+#define BLOCK_GET_EXP 400012
+#define BLOCK_SUCCEED 400013
+#define BLOCK_GET_WHILE_STMT 400014
+#define BLOCK_GET_IF_STMT 400015
+#define BLOCK_GET_IF_ELSE_STMT 400016
+#define BLOCK_GET_CONTINUE_STMT 400017
+#define BLOCK_GET_BREAK_STMT 400018
+#define BLOCK_GET_EMPTY_RETURN_STMT 400019
+#define BLOCK_GET_NON_EMPTY_RETURN_STMT 400020
+#define BLOCK_GET_RETURN_VALUE 400021
+#define BLOCK_GET_IF_LPAREN 400022
+#define BLOCK_GET_WHILE_LPAREN 400023
+#define BLOCK_GET_IF_EXP_WAIT_FOR_RPAREN 400024
+#define BLOCK_GET_WHILE_EXP_WAIT_FOR_RPAREN 400025
+#define BLOCK_GET_IF_EXP 400026
+#define BLOCK_GET_WHILE_EXP 400027
+#define BLOCK_WAIT_FOR_OPTIONALLY_MORE_STMT 400028
+#define BLOCK_GET_NEW_STMT 400029
+#define BLOCK_GET_IF_STMT_AND_ELSE 400030
+#define BLOCK_GET_ASSIGN_STMT_WITHOUT_SEMICOLON 400031
+#define BLOCK_GET_ASSIGN_STMT 400032
+#define BLOCK_GET_EXPR_STMT 400033
+#define BLOCK_GET_BLOCK_STMT 400034
+#define BLOCK_GET_FIRST_BLOCK_ITEM 400035
+#define BLOCK_GET_ONE_MORE_BLOCK_ITEM 400036
+#define BLOCK_GET_NON_EMPTY_BLOCK 400037
+
+
 extern SymbolTable* symbol_table;
 
 class Parser
@@ -153,13 +194,17 @@ private:
                                    std::stack<void*>& _symbols);
     int parse_var_decl_next_step(std::stack<int>& _states, 
                                  std::stack<void*>& _symbols);
+    int parse_block_next_step(std::stack<int>& _states,
+                              std::stack<void*>& _symbols);
+    std::pair<int, int> parse_next_const_decl();
+    std::pair<int, int> parse_next_var_decl();
 public:
     Parser(const char* code);
     ~Parser();
     void parse_next();
     Symbol* parse_next_exp();
-    int parse_next_const_decl();
-    int parse_next_var_decl();
+    std::pair<int, int> parse_next_decl();
+    Symbol* parse_next_block();
 };
 
 #endif

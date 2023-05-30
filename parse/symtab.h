@@ -67,6 +67,7 @@ public:
     SymbolTable* parent_scope();
     SymbolTable* create_subscope();
     void add_entry(const SymbolTableEntry& entry);
+    void delete_entry();
     void print_table();
     SymbolTableEntry* get_entry_if_contains(const char* _name);
     SymbolTableEntry* get_entry_if_contains_in_tree(const char* _name);

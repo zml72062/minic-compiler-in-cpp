@@ -29,12 +29,12 @@ int main(int argc, char** argv)
     read_file(argv[1], code, MAX_CODE_LENGTH);
 
     Parser parser(code);
-    // symbol_table = symbol_table->create_subscope();
     while (true)
     {
-        int decl = parser.parse_next_var_decl();
-        if (decl == 0)
+        auto decl = parser.parse_next_block();
+        if (decl == nullptr)
             break;
+        printf("%s\n", decl->to_str().c_str());
     }    
     symbol_table->print_table();
     printf("Hello\n");

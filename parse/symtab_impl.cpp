@@ -28,6 +28,13 @@ void SymbolTable::add_entry(const SymbolTableEntry& entry)
     this->entries.push_back(new SymbolTableEntry(entry));
 }
 
+void SymbolTable::delete_entry()
+{
+    delete this->entries.back();
+    this->entries.pop_back();
+}
+
+
 SymbolTable::~SymbolTable()
 {
     for (auto& subscope : this->subscopes)

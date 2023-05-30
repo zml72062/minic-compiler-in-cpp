@@ -3,12 +3,19 @@
 #include "../utils.h"
 #include <stdio.h>
 
-int Parser::parse_next_const_decl()
+/**
+ *  The first component records whether the parsing is successful;
+ *  1 for true and 0 for false.
+ *  The second component records the number of symbol table entries
+ *  appended to the symbol table.
+ */
+std::pair<int, int> Parser::parse_next_const_decl()
 {
     std::stack<int> const_decl_states;
     std::stack<void*> const_decl_symbols;
     const_decl_states.push(CONST_DECL_START);
     auto lexer_state = this->lexer.get_state();
+    int n_entries = 0;
 
     while (true)
     {
@@ -21,11 +28,17 @@ int Parser::parse_next_const_decl()
                 clear((Symbol*)const_decl_symbols.top());
                 const_decl_symbols.pop();
             }
-            return 0;
+            for (auto i = 0; i < n_entries; i++)
+                symbol_table->delete_entry();
+            return std::pair<int, int>(0, 0);
         }
         if (can_parse == 1)
         {
-            return 1;
+            return std::pair<int, int>(1, n_entries);
+        }
+        if (can_parse == 2)
+        {
+            n_entries++;
         }
     }
 }
@@ -98,7 +111,7 @@ int Parser::parse_const_decl_next_step(std::stack<int>& _states,
                 _states.pop();
                 _states.push(CONST_DECL_GET_CONST_NAME);
                 this->lexer.restore_state(lexer_state);
-                return 0;
+                return 2;
             }
             return -1;
         case CONST_DECL_GET_CONST_NAME:

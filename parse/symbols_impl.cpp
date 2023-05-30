@@ -258,6 +258,95 @@ ExpArray::ExpArray(const std::vector<std::size_t>& _sizes, const std::vector<Sym
     this->value = _value;
 }
 
+Block::Block(): Symbol()
+{
+    this->symbol_idx = SYMBOL_BLOCK;
+}
+
+void Block::add_statement(Symbol* _stmt)
+{
+    this->children.push_back(_stmt);
+    _stmt->parent = this;
+}
+
+EmptyStatement::EmptyStatement(): Symbol()
+{
+    this->symbol_idx = SYMBOL_EMPTY_STMT;
+}
+
+IfStatement::IfStatement(Symbol* _expr, Symbol* _stmt): Symbol()
+{
+    this->symbol_idx = SYMBOL_IF_STMT;
+    this->children.push_back(_expr);
+    _expr->parent = this;
+    this->children.push_back(_stmt);
+    _stmt->parent = this;
+}
+
+IfElseStatement::IfElseStatement(Symbol* _expr, Symbol* _stmt_if, Symbol* _stmt_else): Symbol()
+{
+    this->symbol_idx = SYMBOL_IF_ELSE_STMT;
+    this->children.push_back(_expr);
+    _expr->parent = this;
+    this->children.push_back(_stmt_if);
+    _stmt_if->parent = this;
+    this->children.push_back(_stmt_else);
+    _stmt_else->parent = this;
+}
+
+WhileStatement::WhileStatement(Symbol* _expr, Symbol* _stmt): Symbol()
+{
+    this->symbol_idx = SYMBOL_WHILE_STMT;
+    this->children.push_back(_expr);
+    _expr->parent = this;
+    this->children.push_back(_stmt);
+    _stmt->parent = this;
+}
+
+AssignStatement::AssignStatement(Symbol* _lval, Symbol* _rval): Symbol()
+{
+    this->symbol_idx = SYMBOL_ASSIGN_STMT;
+    this->children.push_back(_lval);
+    _lval->parent = this;
+    this->children.push_back(_rval);
+    _rval->parent = this;
+}
+
+ReturnNoneStatement::ReturnNoneStatement(): Symbol()
+{
+    this->symbol_idx = SYMBOL_RETURN_NONE_STMT;
+}
+
+BreakStatement::BreakStatement(): Symbol()
+{
+    this->symbol_idx = SYMBOL_BREAK_STMT;
+}
+
+ContinueStatement::ContinueStatement(): Symbol()
+{
+    this->symbol_idx = SYMBOL_CONTINUE_STMT;
+}
+
+ReturnValueStatement::ReturnValueStatement(Symbol* _retval): Symbol()
+{
+    this->symbol_idx = SYMBOL_RETURN_VAL_STMT;
+    this->children.push_back(_retval);
+    _retval->parent = this;
+}
+
+ExpressionStatement::ExpressionStatement(Symbol* _expr): Symbol()
+{
+    this->symbol_idx = SYMBOL_EXPR_STMT;
+    this->children.push_back(_expr);
+    _expr->parent = this;
+}
+
+
+
+
+
+
+
 LexemePacker* LexemePacker::copy()
 {
     return new LexemePacker(*this);
@@ -336,6 +425,52 @@ ExpArrayInitialization* ExpArrayInitialization::copy()
 ExpArray* ExpArray::copy()
 {
     return new ExpArray(*this);
+}
+
+Block* Block::copy()
+{
+    return new Block(*this);
+}
+
+EmptyStatement* EmptyStatement::copy()
+{
+    return new EmptyStatement(*this);
+}
+IfStatement* IfStatement::copy()
+{
+    return new IfStatement(*this);
+}
+IfElseStatement* IfElseStatement::copy()
+{
+    return new IfElseStatement(*this);
+}
+WhileStatement* WhileStatement::copy()
+{
+    return new WhileStatement(*this);
+}
+ReturnNoneStatement* ReturnNoneStatement::copy()
+{
+    return new ReturnNoneStatement(*this);
+}
+ReturnValueStatement* ReturnValueStatement::copy()
+{
+    return new ReturnValueStatement(*this);
+}
+ExpressionStatement* ExpressionStatement::copy()
+{
+    return new ExpressionStatement(*this);
+}
+AssignStatement* AssignStatement::copy()
+{
+    return new AssignStatement(*this);
+}
+BreakStatement* BreakStatement::copy()
+{
+    return new BreakStatement(*this);
+}
+ContinueStatement* ContinueStatement::copy()
+{
+    return new ContinueStatement(*this);
 }
 
 std::string Symbol::to_str()
@@ -521,6 +656,62 @@ std::string ExpArray::to_str()
     return array_type_to_str(this->sizes) + val_str + "}";
 }
 
+std::string Block::to_str()
+{
+    std::string val_str = "Block containing {\n";
+    for (auto& val: this->children)
+    {
+        val_str += ("    " + val->to_str() + "\n");
+    }
+    return val_str + "}\n";
+}
+
+std::string EmptyStatement::to_str()
+{
+    return std::string("Statement()");
+}
+std::string IfStatement::to_str()
+{
+    return "if (" + this->children[0]->to_str() + ") {" +
+                    this->children[1]->to_str() + "}";
+}
+std::string IfElseStatement::to_str()
+{
+    return "if (" + this->children[0]->to_str() + ") {" +
+                    this->children[1]->to_str() + "} else {" + 
+                    this->children[2]->to_str() + "}";
+}
+std::string ReturnNoneStatement::to_str()
+{
+    return std::string("return()");
+}
+std::string ReturnValueStatement::to_str()
+{
+    return "return(" + this->children[0]->to_str() + ")";
+}
+std::string AssignStatement::to_str()
+{
+    return "assign " + this->children[1]->to_str() + " to "
+                     + this->children[0]->to_str();
+}
+std::string ExpressionStatement::to_str()
+{
+    return "Expression(" + this->children[0]->to_str() + ")";
+}
+std::string WhileStatement::to_str()
+{
+    return "while (" + this->children[0]->to_str() + ") {" +
+                       this->children[1]->to_str() + "}";
+}
+std::string BreakStatement::to_str()
+{
+    return std::string("break");
+}
+std::string ContinueStatement::to_str()
+{
+    return std::string("continue");
+}
+
 void clear(Symbol* symbol)
 {
     for (auto& child: symbol->children)
@@ -540,3 +731,129 @@ void clear_exp_arr_init(ExpArrayInitialization* symbol)
     delete symbol;
 }
 
+bool LexemePacker::is_lval()
+{
+    if (this->lexeme.lex_type == IDENTIFIERS)
+        return true;
+    return false;
+}
+
+bool Symbol::is_lval()
+{
+    return false;
+}
+
+bool Variable::is_lval()
+{
+    return true;
+}
+
+bool Function::is_lval()
+{
+    return false;
+}
+
+bool Number::is_lval()
+{
+    return false;
+}
+
+bool UnaryExpression::is_lval()
+{
+    return false;
+}
+
+bool MulExpression::is_lval()
+{
+    return false;
+}
+
+bool AddExpression::is_lval()
+{
+    return false;
+}
+
+bool RelExpression::is_lval()
+{
+    return false;
+}
+
+bool EqExpression::is_lval()
+{
+    return false;
+}
+
+bool AndExpression::is_lval()
+{
+    return false;
+}
+
+bool OrExpression::is_lval()
+{
+    return false;
+}
+
+bool IndexExpression::is_lval()
+{
+    return this->children[0]->is_lval();
+}
+
+bool ArrayInitialization::is_lval()
+{
+    return false;
+}
+
+bool ExpArrayInitialization::is_lval()
+{
+    return false;
+}
+
+bool ExpArray::is_lval()
+{
+    return false;
+}
+
+bool Block::is_lval()
+{
+    return false;
+}
+bool EmptyStatement::is_lval()
+{
+    return false;
+}
+bool IfStatement::is_lval()
+{
+    return false;
+}
+bool IfElseStatement::is_lval()
+{
+    return false;
+}
+bool ReturnNoneStatement::is_lval()
+{
+    return false;
+}
+bool ReturnValueStatement::is_lval()
+{
+    return false;
+}
+bool AssignStatement::is_lval()
+{
+    return false;
+}
+bool ExpressionStatement::is_lval()
+{
+    return false;
+}
+bool WhileStatement::is_lval()
+{
+    return false;
+}
+bool BreakStatement::is_lval()
+{
+    return false;
+}
+bool ContinueStatement::is_lval()
+{
+    return false;
+}
