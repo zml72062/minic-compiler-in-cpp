@@ -341,11 +341,17 @@ ExpressionStatement::ExpressionStatement(Symbol* _expr): Symbol()
     _expr->parent = this;
 }
 
+FunctionDef::FunctionDef(SymbolTable* _args_scope): Symbol()
+{
+    this->symbol_idx = SYMBOL_FUNC_DEF;
+    this->args_scope = _args_scope;
+}
 
-
-
-
-
+void FunctionDef::add_definition(Block* _def)
+{
+    this->children.push_back(_def);
+    _def->parent = this;
+}
 
 LexemePacker* LexemePacker::copy()
 {
@@ -471,6 +477,10 @@ BreakStatement* BreakStatement::copy()
 ContinueStatement* ContinueStatement::copy()
 {
     return new ContinueStatement(*this);
+}
+FunctionDef* FunctionDef::copy()
+{
+    return new FunctionDef(*this);
 }
 
 std::string Symbol::to_str()
@@ -712,8 +722,15 @@ std::string ContinueStatement::to_str()
     return std::string("continue");
 }
 
+std::string FunctionDef::to_str()
+{
+    return "Function: " + this->children[0]->to_str();
+}
+
 void clear(Symbol* symbol)
 {
+    if (symbol == nullptr)
+        return;
     for (auto& child: symbol->children)
     {
         clear(child);
@@ -723,6 +740,8 @@ void clear(Symbol* symbol)
 
 void clear_exp_arr_init(ExpArrayInitialization* symbol)
 {
+    if (symbol == nullptr)
+        return;
     for (auto& child: symbol->children)
     {
         if (child->symbol_idx == SYMBOL_EXP_ARR_INIT)

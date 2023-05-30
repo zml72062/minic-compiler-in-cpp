@@ -30,6 +30,11 @@ void SymbolTable::add_entry(const SymbolTableEntry& entry)
 
 void SymbolTable::delete_entry()
 {
+    for (auto& init_exp: this->entries.back()->init_exp)
+    {
+        clear((Symbol*)init_exp);
+    }
+    clear((Symbol*)(this->entries.back()->func_def));
     delete this->entries.back();
     this->entries.pop_back();
 }
@@ -43,6 +48,11 @@ SymbolTable::~SymbolTable()
     }
     for (auto& entry : this->entries)
     {
+        for (auto& init_exp: entry->init_exp)
+        {
+            clear((Symbol*)init_exp);
+        }
+        clear((Symbol*)(entry->func_def));
         delete entry;
     }
 }
@@ -91,5 +101,7 @@ void SymbolTable::print_table()
         for (auto i = 0; i < size; i++)
             value_cast[i] = (Symbol*)(entry->init_exp[i]);
         std::cout << ExpArray(entry->type.array_lengths, value_cast).to_str() << std::endl;
+        if (entry->func_def != nullptr)
+            std::cout << ((FunctionDef*)(entry->func_def))->to_str() << std::endl;
     }
 }

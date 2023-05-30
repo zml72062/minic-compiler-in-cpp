@@ -17,9 +17,6 @@ std::pair<int, int> Parser::parse_next_decl()
             return std::pair<int, int>(1, parse_const.second);
         for (auto i = 0; i < parse_const.second; i++)
             symbol_table->delete_entry();
-        fprintf(stderr, "Syntactical error: expected ';' at line %lu!\n",
-                this->lexer.get_lineno());
-        this->error = 1;
         return std::pair<int, int>(0, 0);
     }
     auto parse_var = this->parse_next_var_decl();
@@ -30,9 +27,6 @@ std::pair<int, int> Parser::parse_next_decl()
             return std::pair<int, int>(1, parse_var.second);
         for (auto i = 0; i < parse_var.second; i++)
             symbol_table->delete_entry();
-        fprintf(stderr, "Syntactical error: expected ';' at line %lu!\n",
-                this->lexer.get_lineno());
-        this->error = 1;
         return std::pair<int, int>(0, 0);
     }
     return std::pair<int, int>(0, 0);

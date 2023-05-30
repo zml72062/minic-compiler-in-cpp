@@ -177,6 +177,36 @@
 #define BLOCK_GET_ONE_MORE_BLOCK_ITEM 400036
 #define BLOCK_GET_NON_EMPTY_BLOCK 400037
 
+#define FUNCDEF_START 500000
+#define FUNCDEF_GET_INT 500001
+#define FUNCDEF_GET_VOID 500002
+#define FUNCDEF_GET_INT_IDENT 500003
+#define FUNCDEF_GET_VOID_IDENT 500004
+#define FUNCDEF_GET_INT_LPAREN_WAIT_FOR_ARGS 500005
+#define FUNCDEF_GET_VOID_LPAREN_WAIT_FOR_ARGS 500006
+#define FUNCDEF_GET_INT_WITHOUT_ARGS 500007
+#define FUNCDEF_GET_VOID_WITHOUT_ARGS 500008
+#define FUNCDEF_GET_AN_INT_ARG 500009
+#define FUNCDEF_WAIT_FOR_AN_INT_ARGNAME 500010
+#define FUNCDEF_WAIT_FOR_OPTIONALLY_MORE_ARR_SUFFIX 500011
+#define FUNCDEF_WAIT_FOR_ARR_SUFFIX 500012
+#define FUNCDEF_WAIT_FOR_NUMBERED_ARR_SUFFIX 500013
+#define FUNCDEF_GET_FIRST_ARR_SUFFIX 500014
+#define FUNCDEF_GET_ARR_LEN 500015
+#define FUNCDEF_GET_A_NUMBERED_ARR_SUFFIX 500016
+#define FUNCDEF_GET_INT_FUNCDEF_WITHOUT_ARGS 500017
+#define FUNCDEF_GET_VOID_FUNCDEF_WITHOUT_ARGS 500018
+#define FUNCDEF_GET_ONE_MORE_ARG 500019
+#define FUNCDEF_WAIT_FOR_MORE_ARGS 500020
+#define FUNCDEF_GET_FIRST_ARG 500021
+#define FUNCDEF_GET_FIRST_ARG_WITH_RET_INT 500022
+#define FUNCDEF_GET_FIRST_ARG_WITH_RET_VOID 500023
+#define FUNCDEF_GET_INT_WITH_ARGS 500024
+#define FUNCDEF_GET_VOID_WITH_ARGS 500025
+#define FUNCDEF_GET_INT_FUNCDEF_WITH_ARGS 500026
+#define FUNCDEF_GET_VOID_FUNCDEF_WITH_ARGS 500027
+#define FUNCDEF_SUCCEED 500028
+
 
 extern SymbolTable* symbol_table;
 
@@ -200,14 +230,14 @@ private:
                                 std::stack<void*>& _symbols);
     std::pair<int, int> parse_next_const_decl();
     std::pair<int, int> parse_next_var_decl();
-public:
-    Parser(const char* code);
-    ~Parser();
-    void parse_next();
     Symbol* parse_next_exp();
     std::pair<int, int> parse_next_decl();
     Symbol* parse_next_block();
     int parse_next_funcdef();
+public:
+    Parser(const char* code);
+    ~Parser();
+    int parse();
 };
 
 #endif

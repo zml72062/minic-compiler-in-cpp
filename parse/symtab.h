@@ -31,6 +31,7 @@ struct SymbolTableEntry
     Type type;
     std::vector<int> init_val;
     std::vector<void*> init_exp;
+    void* func_def;
     std::size_t addr;
 
 
@@ -47,6 +48,7 @@ struct SymbolTableEntry
     void set_init_val(const std::vector<int>& _init_val);
     void set_init_exp(void* _init_exp);
     void set_init_exp(const std::vector<void*>& _init_exp);
+    void set_func_def(void* _func_def);
     ~SymbolTableEntry() = default;
 };
 
@@ -54,8 +56,9 @@ class SymbolTable
 {
 private:
     SymbolTable* parent;
-    std::vector<SymbolTable*> subscopes;
     std::vector<SymbolTableEntry*> entries;
+    std::vector<SymbolTable*> subscopes;
+    
 public:
     SymbolTable();
     ~SymbolTable();

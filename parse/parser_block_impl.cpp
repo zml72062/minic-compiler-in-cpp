@@ -409,6 +409,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 _symbols.push(new EmptyStatement());
                 this->lexer.restore_state(lexer_state);
                 return 0;
@@ -505,6 +506,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 _symbols.push(new BreakStatement());
                 this->lexer.restore_state(lexer_state);
                 return 0;
@@ -601,6 +603,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 _symbols.push(new ContinueStatement());
                 this->lexer.restore_state(lexer_state);
                 return 0;
@@ -697,6 +700,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 _symbols.push(new ReturnNoneStatement());
                 this->lexer.restore_state(lexer_state);
                 return 0;
@@ -824,7 +828,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
-
+                clear(exp);
                 Symbol* else_stmt = (Symbol*)(_symbols.top());
                 _symbols.pop();
                 Symbol* if_stmt = (Symbol*)(_symbols.top());
@@ -950,6 +954,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 Symbol* stmt = (Symbol*)(_symbols.top());
                 _symbols.pop();
                 Symbol* expr = (Symbol*)(_symbols.top());
@@ -1068,6 +1073,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 Symbol* stmt = (Symbol*)(_symbols.top());
                 _symbols.pop();
                 Symbol* expr = (Symbol*)(_symbols.top());
@@ -1176,6 +1182,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 Symbol* expr = (Symbol*)(_symbols.top());
                 _symbols.pop();
                 _symbols.push(new ReturnValueStatement(expr));
@@ -1321,6 +1328,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 Symbol* rval = (Symbol*)(_symbols.top());
                 _symbols.pop();
                 Symbol* lval = (Symbol*)(_symbols.top());
@@ -1436,6 +1444,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 Symbol* expr = (Symbol*)(_symbols.top());
                 _symbols.pop();
                 _symbols.push(new ExpressionStatement(expr));
@@ -1529,6 +1538,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 this->lexer.restore_state(lexer_state);
                 return 0;
             }  
@@ -1607,7 +1617,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
-
+                clear(exp);
                 Symbol* stmt = (Symbol*)(_symbols.top());
                 _symbols.pop();
                 Block* block = (Block*)(_symbols.top());
@@ -1680,6 +1690,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     default:
                         return -1;
                 }
+                clear(exp);
                 this->lexer.restore_state(lexer_state);
                 return 0;
             }  
@@ -1810,6 +1821,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                 _states.pop();
                 _states.pop();
                 _states.push(BLOCK_WAIT_FOR_OPTIONALLY_MORE_STMT);
+                clear(exp);
                 this->lexer.restore_state(lexer_state);
                 return 0;
             }  
@@ -1848,6 +1860,7 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                     return -1;
                 _states.pop();
                 _states.push(BLOCK_WAIT_FOR_OPTIONALLY_MORE_STMT);
+                clear(exp);
                 this->lexer.restore_state(lexer_state);
                 return 0;
             }  

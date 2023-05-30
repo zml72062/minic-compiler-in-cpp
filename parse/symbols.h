@@ -31,6 +31,7 @@
 #define SYMBOL_WHILE_STMT 22
 #define SYMBOL_EXPR_STMT 23
 #define SYMBOL_ASSIGN_STMT 24
+#define SYMBOL_FUNC_DEF 25
 
 struct Symbol
 {
@@ -281,6 +282,17 @@ struct ExpressionStatement: public Symbol
 {
     ExpressionStatement(Symbol* _expr);
     virtual ExpressionStatement* copy();
+    virtual std::string to_str();
+};
+
+struct FunctionDef: public Symbol
+{
+    /* This is the place that "symbol_table" must point at 
+       when translating function calls. */
+    SymbolTable* args_scope;
+    FunctionDef(SymbolTable* _args_scope);
+    void add_definition(Block* _def);
+    virtual FunctionDef* copy();
     virtual std::string to_str();
 };
 
