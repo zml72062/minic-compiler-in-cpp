@@ -32,6 +32,7 @@
 #define SYMBOL_EXPR_STMT 23
 #define SYMBOL_ASSIGN_STMT 24
 #define SYMBOL_FUNC_DEF 25
+#define SYMBOL_LOCAL_VAR_DECL 26
 
 struct Symbol
 {
@@ -296,6 +297,13 @@ struct FunctionDef: public Symbol
     virtual std::string to_str();
 };
 
+struct LocalVarDeclaration: public Symbol
+{
+    SymbolTableEntry* entry;
+    LocalVarDeclaration(SymbolTableEntry* _entry);
+    virtual LocalVarDeclaration* copy();
+    virtual std::string to_str();
+};
 
 void clear(Symbol* symbol);
 void clear_exp_arr_init(ExpArrayInitialization* symbol);

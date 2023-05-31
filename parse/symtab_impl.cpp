@@ -105,3 +105,9 @@ void SymbolTable::print_table()
             std::cout << ((FunctionDef*)(entry->func_def))->to_str() << std::endl;
     }
 }
+
+std::vector<SymbolTableEntry*>& SymbolTable::get_entries()
+{
+    return this->entries;
+}
+

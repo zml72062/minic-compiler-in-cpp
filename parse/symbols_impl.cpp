@@ -347,6 +347,12 @@ FunctionDef::FunctionDef(SymbolTable* _args_scope): Symbol()
     this->args_scope = _args_scope;
 }
 
+LocalVarDeclaration::LocalVarDeclaration(SymbolTableEntry* _entry): Symbol()
+{
+    this->symbol_idx = SYMBOL_LOCAL_VAR_DECL;
+    this->entry = _entry;
+}
+
 void FunctionDef::add_definition(Block* _def)
 {
     this->children.push_back(_def);
@@ -482,6 +488,10 @@ FunctionDef* FunctionDef::copy()
 {
     return new FunctionDef(*this);
 }
+LocalVarDeclaration* LocalVarDeclaration::copy()
+{
+    return new LocalVarDeclaration(*this);
+}
 
 std::string Symbol::to_str()
 {
@@ -498,6 +508,13 @@ std::string Variable::to_str()
     return 
     // this->entry->type.to_str() + " " + 
     "var(" + this->entry->name + ")";
+}
+
+std::string LocalVarDeclaration::to_str()
+{
+    return 
+    // this->entry->type.to_str() + " " + 
+    "vardecl(" + this->entry->name + ")";
 }
 
 std::string Function::to_str()

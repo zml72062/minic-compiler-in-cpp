@@ -97,10 +97,28 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
                 return 0;
             }
             this->lexer.restore_state(lexer_state);
-            if (this->parse_next_decl().first)
             {
-                _states.push(BLOCK_GET_DECL);
-                return 0;
+                auto next_decl = this->parse_next_decl();
+                if (next_decl.first)
+                {
+                    _states.push(BLOCK_GET_DECL);
+
+                    Block* block = (Block*)(_symbols.top());
+                    auto entry_number = symbol_table->get_entries().size();
+                    auto last_appended_entry_number = next_decl.second;
+                    for (auto i = entry_number - last_appended_entry_number;
+                         i < entry_number; i++)
+                    {
+                        auto entry = symbol_table->get_entries()[i];
+                        /* Only add declaration for variables. */
+                        if (entry->type.basic_type == BASIC_TYPE_INT)
+                        {
+                            block->add_statement(new LocalVarDeclaration(entry));
+                        }
+                    }
+
+                    return 0;
+                }
             }
             this->lexer.restore_state(lexer_state);
             {
@@ -1743,9 +1761,25 @@ int Parser::parse_block_next_step(std::stack<int>& _states,
             }
             this->lexer.restore_state(lexer_state);
             {
-                if (this->parse_next_decl().first)
+                auto next_decl = this->parse_next_decl();
+                if (next_decl.first)
                 {
                     _states.push(BLOCK_GET_DECL);
+
+                    Block* block = (Block*)(_symbols.top());
+                    auto entry_number = symbol_table->get_entries().size();
+                    auto last_appended_entry_number = next_decl.second;
+                    for (auto i = entry_number - last_appended_entry_number;
+                         i < entry_number; i++)
+                    {
+                        auto entry = symbol_table->get_entries()[i];
+                        /* Only add declaration for variables. */
+                        if (entry->type.basic_type == BASIC_TYPE_INT)
+                        {
+                            block->add_statement(new LocalVarDeclaration(entry));
+                        }
+                    }
+
                     return 0;
                 }
             }
