@@ -7,33 +7,6 @@
 #include "symbols.h"
 #include <utility>
 
-#define PROGRAM_START 0
-#define GET_CONST_WAIT_FOR_INT 1
-#define GET_INT_WAIT_FOR_IDENT 2
-#define GET_VOID_WAIT_FOR_IDENT 3
-#define GET_CONST_INT_WAIT_FOR_IDENT 4
-#define GET_INT_NAME_BUT_CAN_BE_FUNCTION 5
-#define GET_VOID_DECLARE 6
-#define GET_CONST_INT_NAME 7
-#define GET_ONE_VAR_NAME_BUT_NO_INIT_PAIR 8
-#define GET_INT_FUNC_DECLARE 9
-#define GET_VOID_FUNC_DECLARE 10
-#define GET_CONST_DEF_WITHOUT_INIT 11
-#define GET_INT_NAME_FOR_VAR 12
-#define GET_CONST_EXP_AS_LEN 13
-#define WAIT_FOR_VAR_INIT 14
-#define WAIT_FOR_VAR_ARRAY_LEN 15
-#define GET_INT_ARG_TYPE 16
-#define GET_NON_ARG_WITH_RET_INT 17
-#define GET_NON_ARG_WITH_RET_VOID 18
-#define WAIT_FOR_CONST_INIT 19
-#define WAIT_FOR_CONST_ARRAY_LEN 20
-#define WAIT_FOR_ARRAY_INIT 21
-#define GET_EXP_AS_INIT 22
-#define WAIT_FOR_CONST_ARRAY_INIT 23
-#define GET_CONST_EXP_AS_CONST_INIT 24
-#define GET_CONST_EXP_AS_CONST_LEN 25
-
 #define EXP_START 100000
 #define EXP_GET_IDENT 100001
 #define EXP_GET_LPAREN 100002
@@ -213,11 +186,8 @@ extern SymbolTable* symbol_table;
 class Parser
 {
 private:
-    std::stack<int> states;
-    std::stack<void*> symbols; /* Store malloced pointers to symbols */
     Lexer lexer;
     int error;
-    int cur_state();
     int parse_exp_next_step(std::stack<int>& _states, 
                             std::stack<void*>& _symbols);
     int parse_const_decl_next_step(std::stack<int>& _states, 

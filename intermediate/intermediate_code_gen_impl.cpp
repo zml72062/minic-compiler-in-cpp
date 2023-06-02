@@ -6,6 +6,8 @@ IntermediateCodeGenerator::IntermediateCodeGenerator()
 {
     next_variable_label = 1;
     next_statement_label = 1;
+    label_if_break = 0;
+    label_if_continue = 0;
     statement_label = 0;
 }
 

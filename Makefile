@@ -21,7 +21,8 @@ test/intermediate_main.o utils.o lex/lexeme_impl.o lex/lexeme_val_impl.o \
 lex/lexer_impl.o parse/parser_const_decl_impl.o parse/parser_var_decl_impl.o \
 parse/parser_decl_impl.o parse/parser_block_impl.o parse/parser_funcdef_impl.o \
 parse/parser_compunit_impl.o intermediate/intermediate_code_gen_impl.o \
-intermediate/intermediate_code_impl.o intermediate/intermediate_code_gen_exp_impl.o
+intermediate/intermediate_code_impl.o intermediate/intermediate_code_gen_exp_impl.o \
+intermediate/intermediate_code_gen_block_stmt_impl.o
 	${CXX} -o test/main parse/*.o test/*.o utils.o lex/*.o intermediate/*.o
 
 lex: lex/lexeme_impl.o lex/lexeme_val_impl.o lex/lexer_impl.o
@@ -33,7 +34,8 @@ parse/parser_decl_impl.o parse/parser_block_impl.o parse/parser_funcdef_impl.o \
 parse/parser_compunit_impl.o
 
 intermediate: intermediate/intermediate_code_gen_impl.o \
-intermediate/intermediate_code_impl.o intermediate/intermediate_code_gen_exp_impl.o
+intermediate/intermediate_code_impl.o intermediate/intermediate_code_gen_exp_impl.o \
+intermediate/intermediate_code_gen_block_stmt_impl.o
 
 clean:
 	rm -rf *.o lex/*.o test/main test/*.o parse/*.o intermediate/*.o

@@ -127,6 +127,8 @@
  *    End definition of the intermediate representation.    *
  ************************************************************/
 
+extern SymbolTable* symbol_table;
+
 struct IntermediateCode
 {
     std::size_t label;
@@ -145,15 +147,17 @@ private:
     std::size_t next_variable_label;
     std::size_t next_statement_label;
     std::size_t statement_label;
+    std::size_t label_if_break;
+    std::size_t label_if_continue;
     std::vector<IntermediateCode*> code;
+    std::size_t generate_addr();
+    std::size_t generate_label();
 public:
     IntermediateCodeGenerator();
     ~IntermediateCodeGenerator();
-    std::size_t generate_addr();
-    std::size_t generate_label();
     std::size_t generate_code_for_exp(Symbol* symbol);
     std::size_t generate_code_for_exp_as_rval(Symbol* symbol);
-    void generate_code_for_statement(Symbol* symbol);
+    void generate_code_for_block_and_statement(Symbol* symbol);
 };
 
 

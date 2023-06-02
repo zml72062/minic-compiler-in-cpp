@@ -87,9 +87,32 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
         {
             Variable* as_variable = (Variable*)symbol;
             auto var = generate_addr();
+            if (as_variable->entry->init_exp.size() > 0)
+            {
+                /* Non-empty 'init_exp' field, indicating a local variable.
+                   In this case, the 'addr' field is the register storing
+                   the address of the variable. */
+                code.push_back(new IntermediateCode(
+                    INSTR_RRMOV, var, as_variable->entry->addr, PLACEHOLDER, statement_label
+                ));
+                return var;
+            }
+            /* Otherwise, the 'init_val' field will be non-empty, indicating a
+               global variable. In this case, the 'addr' field is the absolute
+               address (i.e. an immediate). */
             code.push_back(new IntermediateCode(
                 INSTR_IRMOV, var, as_variable->entry->addr, PLACEHOLDER, statement_label
             ));
+            /** NOTICE: we won't be concerned with where to put the global variables
+             *  and functions, since this is the assembler and the linker's 
+             *  responsibility. 
+             *  Concretely, the assembler will leave the "immediates" that should be 
+             *  the address of global variables and functions as zero, but copy the 
+             *  global symbol table we have produced to the objective file. The linker
+             *  then reads the global symbol table, and choose the address of global
+             *  variables and functions following hardware & OS dependent conventions.
+             *  This is just "relocation".
+             */
             return var; // a register that stores the address of the variable
         }       
         case SYMBOL_NUMBER:
