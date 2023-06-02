@@ -1,10 +1,17 @@
 #include "symtab.h"
 
+SymbolTableEntry::SymbolTableEntry(): name(), type(), init_val(), init_exp()
+{
+    this->func_def = nullptr;
+    this->addr = 0;
+}
+
 SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type)
 {
     this->name = _name;
     this->type.basic_type = basic_type;
     this->func_def = nullptr;
+    this->addr = 0;
 }
 
 SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type, int _init_val)
@@ -14,6 +21,7 @@ SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type, int
     this->init_val = std::vector<int>();
     this->init_val.push_back(_init_val);
     this->func_def = nullptr;
+    this->addr = 0;
 }
 
 SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type, const std::vector<int>& _init_val)
@@ -22,6 +30,7 @@ SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type, con
     this->type.basic_type = basic_type;
     this->init_val = _init_val;
     this->func_def = nullptr;
+    this->addr = 0;
 }
 
 SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type, void* _init_exp)
@@ -31,6 +40,7 @@ SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type, voi
     this->init_exp = std::vector<void*>();
     this->init_exp.push_back(_init_exp);
     this->func_def = nullptr;
+    this->addr = 0;
 }
 
 SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type, const std::vector<void*>& _init_exp)
@@ -39,6 +49,7 @@ SymbolTableEntry::SymbolTableEntry(const std::string& _name, int basic_type, con
     this->type.basic_type = basic_type;
     this->init_exp = _init_exp;
     this->func_def = nullptr;
+    this->addr = 0;
 }
 
 void SymbolTableEntry::set_init_val(int _init_val)

@@ -35,7 +35,7 @@ struct SymbolTableEntry
     std::size_t addr;
 
 
-    SymbolTableEntry() = default;
+    SymbolTableEntry();
     SymbolTableEntry(const std::string& _name, int basic_type);
     /* Initialize by value (for constants) */
     SymbolTableEntry(const std::string& _name, int basic_type, int _init_val);
