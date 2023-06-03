@@ -19,8 +19,23 @@ IntermediateCode::IntermediateCode(std::size_t _instr, std::size_t _dest, std::s
     _label = 0;
 }
 
+static bool is_global(std::size_t addr_or_label)
+{
+    return addr_or_label > (1 << 30);
+}
+
 static std::string addr_to_str(std::size_t addr)
 {
+    if (is_global(addr))
+    {
+        for (auto& entry: symbol_table->get_entries())
+        {
+            if (entry->addr == addr)
+            {
+                return entry->name;
+            }
+        }
+    }
     return "%" + std::to_string(addr);
 }
 
@@ -29,12 +44,27 @@ static std::string arg_to_str(std::size_t addr)
     return "%arg" + std::to_string(addr);
 }
 
+static std::string label_to_str(std::size_t label)
+{
+    if (is_global(label))
+    {
+        for (auto& entry: symbol_table->get_entries())
+        {
+            if (entry->addr == label)
+            {
+                return entry->name;
+            }
+        }
+    }
+    return "L" + std::to_string(label);
+}
+
 std::string IntermediateCode::to_str()
 {
     std::string prefix;
     if (label > 0)
     {
-        prefix += ("L" + std::to_string(label) + ":\n");
+        prefix += (label_to_str(label) + ":\n");
     }
     switch (instr)
     {
@@ -75,17 +105,21 @@ std::string IntermediateCode::to_str()
         case INSTR_NEQ:
             return prefix + "  neq    " + addr_to_str(dest) + ", " + addr_to_str(loperand) + ", " + addr_to_str(roperand);
         case INSTR_JMP:
-            return prefix + "  jmp    " + "L" + std::to_string(roperand);
+            return prefix + "  jmp    " + label_to_str(roperand);
         case INSTR_JE:
-            return prefix + "  je     " + addr_to_str(loperand) + ", " + "L" + std::to_string(roperand);
+            return prefix + "  je     " + addr_to_str(loperand) + ", " + label_to_str(roperand);
         case INSTR_JNE:
-            return prefix + "  jne    " + addr_to_str(loperand) + ", " + "L" + std::to_string(roperand);
+            return prefix + "  jne    " + addr_to_str(loperand) + ", " + label_to_str(roperand);
         case INSTR_ARG:
             return prefix + "  arg    " + arg_to_str(loperand) + ", " + addr_to_str(roperand);
+        case INSTR_LARG:
+            return prefix + "  larg   " + addr_to_str(loperand) + ", " + arg_to_str(roperand);
         case INSTR_CALL:
-            return prefix + "  call   " + addr_to_str(dest) + ", " + "L" + std::to_string(loperand) + ", " + std::to_string(roperand);
+            return prefix + "  call   " + addr_to_str(dest) + ", " + label_to_str(loperand) + ", " + std::to_string(roperand);
         case INSTR_RET:
             return prefix + "  ret    " + addr_to_str(loperand);
+        case INSTR_GLOB:
+            return prefix + "  glob   " + addr_to_str(loperand);
         default:
             return prefix;
     }

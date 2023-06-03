@@ -110,18 +110,29 @@
  */
 #define INSTR_ARG 21
 /**
+ *  LARG loperand, roperand
+ *      Move the value stored in the register for the 'roperand'-th argument to
+ *      register 'loperand'.
+ */
+#define INSTR_LARG 22
+/**
  *  CALL dest, loperand, roperand
  *      Call the function whose label is 'loperand' with 'roperand' arguments, and
  *      store the return value at 'dest'.
  */
-#define INSTR_CALL 22
+#define INSTR_CALL 23
 /**
  *  RET loperand
  *      Move the value stored in 'loperand' to the return value register and 
  *      return. If 'loperand == 0', then no return value.
  */
-#define INSTR_RET 23
-
+#define INSTR_RET 24
+/**
+ *  GLOB loperand
+ *      Declare that the immediate 'loperand' is an address for global symbol,
+ *      whose memory allocation is handled by operating system.
+ */
+#define INSTR_GLOB 25
 
 /************************************************************
  *    End definition of the intermediate representation.    *
@@ -146,18 +157,23 @@ struct IntermediateCodeGenerator
 private:
     std::size_t next_variable_label;
     std::size_t next_statement_label;
+    std::size_t next_global_symbol_label;
     std::size_t statement_label;
     std::size_t label_if_break;
     std::size_t label_if_continue;
     std::vector<IntermediateCode*> code;
     std::size_t generate_addr();
+    std::size_t generate_global_addr();
     std::size_t generate_label();
-public:
-    IntermediateCodeGenerator();
-    ~IntermediateCodeGenerator();
     std::size_t generate_code_for_exp(Symbol* symbol);
     std::size_t generate_code_for_exp_as_rval(Symbol* symbol);
     void generate_code_for_block_and_statement(Symbol* symbol);
+public:
+    int error;
+    IntermediateCodeGenerator();
+    ~IntermediateCodeGenerator();
+    void generate_code();
+    void print_code();
 };
 
 

@@ -22,19 +22,21 @@ int main(int argc, char** argv)
     read_file(argv[1], code, MAX_CODE_LENGTH);
 
     Parser parser(code);
-    auto exp = parser.parse_next_block();
-    if (exp == nullptr)
+    if (!parser.parse())
     {
         fprintf(stderr, "Parsing failed!\n");
         delete symbol_table;
         exit(2);
     }
     IntermediateCodeGenerator gen;
-    gen.generate_code_for_block_and_statement(exp);
-    for (auto& c: gen.code)
+    gen.generate_code();
+    if (gen.error)
     {
-        printf("%s\n", c->to_str().c_str());
+        fprintf(stderr, "Intermediate code generation failed!\n");
+        delete symbol_table;
+        exit(3);
     }
+    gen.print_code();
     delete symbol_table;
     return 0;
 }

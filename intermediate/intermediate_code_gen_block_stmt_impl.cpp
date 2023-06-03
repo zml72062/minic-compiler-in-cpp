@@ -135,11 +135,23 @@ void IntermediateCodeGenerator::generate_code_for_block_and_statement(Symbol* sy
             return;
         }
         case SYMBOL_BREAK_STMT:
+            if (label_if_break == 0)
+            {
+                fprintf(stderr, "Semantic error: 'break' statement must be "
+                        "inside a 'while' loop!\n");
+                this->error = 1;
+            }
             code.push_back(new IntermediateCode(
                 INSTR_JMP, PLACEHOLDER, PLACEHOLDER, label_if_break, statement_label
             ));
             return;
         case SYMBOL_CONTINUE_STMT:
+            if (label_if_continue == 0)
+            {
+                fprintf(stderr, "Semantic error: 'continue' statement must be "
+                        "inside a 'while' loop!\n");
+                this->error = 1;
+            }
             code.push_back(new IntermediateCode(
                 INSTR_JMP, PLACEHOLDER, PLACEHOLDER, label_if_continue, statement_label
             ));

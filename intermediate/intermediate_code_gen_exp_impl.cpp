@@ -375,10 +375,19 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
             {
                 auto arg_type = func_call->entry->type.ret_and_arg_types[i + 1];
                 std::size_t arg;
-                if (arg_type.array_lengths.size() == 0)
+                if (arg_type.array_lengths.size() == 0) /* Scalar argument. */
                 {
                     /* Pass by value. */
-                    arg = generate_code_for_exp_as_rval(func_call->children[i]);
+                    std::size_t value = generate_code_for_exp_as_rval(func_call->children[i]);
+                    /* Store a copy of the value in memory, and pass
+                       the pointer to function. */
+                    arg = generate_addr();
+                    code.push_back(new IntermediateCode(
+                        INSTR_ALLOC, arg, INT_SIZE, PLACEHOLDER, statement_label
+                    ));
+                    code.push_back(new IntermediateCode(
+                        INSTR_RMMOV, arg, value, PLACEHOLDER, statement_label
+                    ));
                 }
                 else
                 {
