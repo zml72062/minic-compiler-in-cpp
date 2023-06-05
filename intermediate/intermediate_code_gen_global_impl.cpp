@@ -20,7 +20,7 @@ void IntermediateCodeGenerator::generate_code()
                 INSTR_GLOB, PLACEHOLDER, entry->addr, PLACEHOLDER, statement_label
             ));
             /* Must guarantee that 'statement_label' is previously 0, see below. */
-            statement_label = entry->addr;
+            statement_label.push_back(entry->addr);
             auto num_args = entry->type.ret_and_arg_types.size() - 1;
             /* The function arguments are recorded in this symbol table. 
                Must update entries in this table when translating. */
@@ -37,7 +37,7 @@ void IntermediateCodeGenerator::generate_code()
             generate_code_for_block_and_statement(((FunctionDef*)entry->func_def)->children[0]);
             /* If control flow tries to move outside the function block, 
                we must stop it by adding return statements. */
-            if (statement_label != 0)
+            if (statement_label.size() > 0)
             {
                 code.push_back(new IntermediateCode(
                     INSTR_RET, PLACEHOLDER, PLACEHOLDER, PLACEHOLDER, statement_label

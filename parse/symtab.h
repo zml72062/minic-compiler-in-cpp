@@ -82,7 +82,6 @@ public:
     void print_table();
     SymbolTableEntry* get_entry_if_contains(const char* _name);
     SymbolTableEntry* get_entry_if_contains_in_tree(const char* _name);
-    void to_global();
 };
 
 

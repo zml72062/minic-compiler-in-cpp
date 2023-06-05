@@ -141,13 +141,13 @@ extern SymbolTable* symbol_table;
 
 struct IntermediateCode
 {
-    std::size_t label;
+    std::vector<std::size_t> labels;
     std::size_t loperand;
     std::size_t roperand;
     std::size_t dest;
     std::size_t instr;
     IntermediateCode(std::size_t _instr, std::size_t _dest, std::size_t _loperand, std::size_t _roperand);
-    IntermediateCode(std::size_t _instr, std::size_t _dest, std::size_t _loperand, std::size_t _roperand, std::size_t& _label);
+    IntermediateCode(std::size_t _instr, std::size_t _dest, std::size_t _loperand, std::size_t _roperand, std::vector<std::size_t>& _label);
     std::string to_str();
 };
 
@@ -157,7 +157,7 @@ private:
     std::size_t next_variable_label;
     std::size_t next_statement_label;
     std::size_t next_global_symbol_label;
-    std::size_t statement_label;
+    std::vector<std::size_t> statement_label;
     std::size_t label_if_break;
     std::size_t label_if_continue;
     std::vector<IntermediateCode*> code;
@@ -173,7 +173,7 @@ public:
     ~IntermediateCodeGenerator();
     void generate_code();
     void print_code();
-    std::vector<IntermediateCode*> to_code();
+    std::vector<IntermediateCode*> simplify_code();
 };
 
 

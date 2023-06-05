@@ -6,22 +6,21 @@ IntermediateCode::IntermediateCode(std::size_t _instr, std::size_t _dest, std::s
     roperand = _roperand;
     dest = _dest;
     instr = _instr;
-    label = 0;
 }
 
-IntermediateCode::IntermediateCode(std::size_t _instr, std::size_t _dest, std::size_t _loperand, std::size_t _roperand, std::size_t& _label)
+IntermediateCode::IntermediateCode(std::size_t _instr, std::size_t _dest, std::size_t _loperand, std::size_t _roperand, std::vector<std::size_t>& _label)
 {
     loperand = _loperand;
     roperand = _roperand;
     dest = _dest;
     instr = _instr;
-    label = _label;
-    _label = 0;
+    labels = _label;
+    _label = std::vector<std::size_t>();
 }
 
 static bool is_global(std::size_t addr_or_label)
 {
-    return addr_or_label > (1 << 30);
+    return ((int)addr_or_label) > (1 << 30);
 }
 
 static std::string addr_to_str(std::size_t addr)
@@ -62,9 +61,12 @@ static std::string label_to_str(std::size_t label)
 std::string IntermediateCode::to_str()
 {
     std::string prefix;
-    if (label > 0)
+    for (auto& label: labels)
     {
-        prefix += (label_to_str(label) + ":\n");
+        if (label > 0)
+        {
+            prefix += (label_to_str(label) + ":\n");
+        }
     }
     switch (instr)
     {
@@ -72,7 +74,7 @@ std::string IntermediateCode::to_str()
             if (is_global(loperand))
                 return prefix + "  irmov  " + addr_to_str(dest) + ", " + addr_to_str(loperand);
             else
-                return prefix + "  irmov  " + addr_to_str(dest) + ", " + std::to_string(loperand);
+                return prefix + "  irmov  " + addr_to_str(dest) + ", " + std::to_string((int)loperand);
         case INSTR_RRMOV:
             return prefix + "  rrmov  " + addr_to_str(dest) + ", " + addr_to_str(loperand);
         case INSTR_RMMOV:

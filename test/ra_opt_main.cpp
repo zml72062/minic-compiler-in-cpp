@@ -1,3 +1,4 @@
+#include "../ra_opt/basicblock.h"
 #include "../intermediate/intermediate.h"
 #include "../parse/parser.h"
 #include "../utils.h"
@@ -35,8 +36,31 @@ int main(int argc, char** argv)
         delete symbol_table;
         exit(3);
     }
-    gen.simplify_code();
+    auto code_out = gen.simplify_code();
     gen.print_code();
+    auto proc = make_procedures(code_out);
+    for (auto& p: proc)
+    {
+        auto blocks = make_basic_blocks(p->code);
+        auto length = blocks.size();
+        for (std::size_t i = 0; i < length; i++)
+        {
+            printf("Block %lu:\n", i);
+            blocks[i]->print_code();
+        }
+        for (auto & b: blocks)
+        {
+            delete b;
+        }
+    }
+    for (auto& p: proc)
+    {
+        delete p;
+    }
+    for (auto& c: code_out)
+    {
+        delete c;
+    }
     delete symbol_table;
     return 0;
 }

@@ -9,32 +9,41 @@ void IntermediateCodeGenerator::generate_code_for_block_and_statement(Symbol* sy
         case SYMBOL_LOCAL_VAR_DECL:
         {
             LocalVarDeclaration* as_decl = (LocalVarDeclaration*)symbol;
-            /* Following our convention, we store the address of a local 
-               variable in a register, and record the cardinal of the 
-               register in the symbol table entry. */
-            auto var = generate_addr();
-            as_decl->entry->addr = var;
 
             auto length = as_decl->entry->init_exp.size();
-            code.push_back(new IntermediateCode(
-                INSTR_ALLOC, var, INT_SIZE * length, PLACEHOLDER, statement_label
-            ));
-            for (std::size_t i = 0; i < length; i++)
+            /* Only store in memory for arrays. */
+            if (as_decl->entry->type.array_lengths.size() > 0)
             {
-                /* Calculate initial value by evaluating expression. */
-                auto init_val = generate_code_for_exp_as_rval((Symbol*)(as_decl->entry->init_exp[i]));
-                auto offset = generate_addr();
+                auto var = generate_addr();
+                as_decl->entry->addr = var;
                 code.push_back(new IntermediateCode(
-                    INSTR_IRMOV, offset, INT_SIZE * i, PLACEHOLDER, statement_label
+                    INSTR_ALLOC, var, INT_SIZE * length, PLACEHOLDER, statement_label
                 ));
-                auto offset_addr = generate_addr();
+                auto init_val0 = generate_code_for_exp_as_rval((Symbol*)(as_decl->entry->init_exp[0]));
                 code.push_back(new IntermediateCode(
-                    INSTR_ADD, offset_addr, var, offset, statement_label
+                    INSTR_RMMOV, var, init_val0, PLACEHOLDER, statement_label
                 ));
-                code.push_back(new IntermediateCode(
-                    INSTR_RMMOV, offset_addr, init_val, PLACEHOLDER, statement_label
-                ));
+                for (std::size_t i = 1; i < length; i++)
+                {
+                    /* Calculate initial value by evaluating expression. */
+                    auto init_val = generate_code_for_exp_as_rval((Symbol*)(as_decl->entry->init_exp[i]));
+                    auto offset = generate_addr();
+                    code.push_back(new IntermediateCode(
+                        INSTR_IRMOV, offset, INT_SIZE * i, PLACEHOLDER, statement_label
+                    ));
+                    auto offset_addr = generate_addr();
+                    code.push_back(new IntermediateCode(
+                        INSTR_ADD, offset_addr, var, offset, statement_label
+                    ));
+                    code.push_back(new IntermediateCode(
+                        INSTR_RMMOV, offset_addr, init_val, PLACEHOLDER, statement_label
+                    ));
+                }
+                return;
             }
+            /* Store in register for scalars. */
+            auto init_val = generate_code_for_exp_as_rval((Symbol*)(as_decl->entry->init_exp[0]));
+            as_decl->entry->addr = init_val;
             return;
         }
         case SYMBOL_EMPTY_STMT:
@@ -43,13 +52,26 @@ void IntermediateCodeGenerator::generate_code_for_block_and_statement(Symbol* sy
         case SYMBOL_ASSIGN_STMT:
         {
             AssignStatement* as_assign = (AssignStatement*)symbol;
-            /* For LVal of the assignment, we need to generate the address. */
-            auto lval_addr = generate_code_for_exp(as_assign->children[0]);
+
             /* For RVal of the assignment, we need to generate the value. */
             auto rval_addr = generate_code_for_exp_as_rval(as_assign->children[1]);
-            code.push_back(new IntermediateCode(
-                INSTR_RMMOV, lval_addr, rval_addr, PLACEHOLDER, statement_label
-            ));
+            if (as_assign->children[0]->symbol_idx == SYMBOL_VARIABLE
+             && ((Variable*)(as_assign->children[0]))->entry->type.array_lengths.size() == 0
+             && !((Variable*)(as_assign->children[0]))->entry->is_global)
+            {
+                auto lval_addr = ((Variable*)(as_assign->children[0]))->entry->addr;
+                code.push_back(new IntermediateCode(
+                    INSTR_RRMOV, lval_addr, rval_addr, PLACEHOLDER, statement_label
+                ));
+            }
+            else
+            {
+                /* For LVal of the assignment, we need to generate the address. */
+                auto lval_addr = generate_code_for_exp(as_assign->children[0]);
+                code.push_back(new IntermediateCode(
+                    INSTR_RMMOV, lval_addr, rval_addr, PLACEHOLDER, statement_label
+                ));
+            }
             return;
         }
         case SYMBOL_EXPR_STMT:
@@ -73,7 +95,7 @@ void IntermediateCodeGenerator::generate_code_for_block_and_statement(Symbol* sy
                 INSTR_JE, PLACEHOLDER, expr_reg, if_not, statement_label
             ));
             generate_code_for_block_and_statement(stmt);
-            statement_label = if_not;
+            statement_label.push_back(if_not);
             return;
         }
         case SYMBOL_IF_ELSE_STMT:
@@ -93,9 +115,9 @@ void IntermediateCodeGenerator::generate_code_for_block_and_statement(Symbol* sy
             code.push_back(new IntermediateCode(
                 INSTR_JMP, PLACEHOLDER, PLACEHOLDER, end_if, statement_label
             ));
-            statement_label = if_not;
+            statement_label.push_back(if_not);
             generate_code_for_block_and_statement(stmt_else);
-            statement_label = end_if;
+            statement_label.push_back(end_if);
             return;
         }
         case SYMBOL_WHILE_STMT:
@@ -107,17 +129,9 @@ void IntermediateCodeGenerator::generate_code_for_block_and_statement(Symbol* sy
             auto break_label = label_if_break;
             auto continue_label = label_if_continue;
 
-            if (statement_label > 0)
-            {
-                /* There is already a label at the beginning. Then don't
-                   generate a new label at the beginning. */
-                label_if_continue = statement_label;
-            }
-            else
-            {
-                label_if_continue = generate_label();
-                statement_label = label_if_continue;
-            }
+            label_if_continue = generate_label();
+            statement_label.push_back(label_if_continue);
+
             auto expr_reg = generate_code_for_exp_as_rval(expr);
             label_if_break = generate_label();
             code.push_back(new IntermediateCode(
@@ -127,7 +141,7 @@ void IntermediateCodeGenerator::generate_code_for_block_and_statement(Symbol* sy
             code.push_back(new IntermediateCode(
                 INSTR_JMP, PLACEHOLDER, PLACEHOLDER, label_if_continue, statement_label
             ));
-            statement_label = label_if_break;
+            statement_label.push_back(label_if_break);
 
             /* Recover 'break' and 'continue' labels. */
             label_if_break = break_label;

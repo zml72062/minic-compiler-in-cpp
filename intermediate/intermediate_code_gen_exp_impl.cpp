@@ -21,6 +21,10 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp_as_rval(Symbol* sym
         case SYMBOL_VARIABLE:
         {
             auto addr = generate_code_for_exp(symbol);
+            /* For local scalars, this is the register holding its value. */
+            if (((Variable*)symbol)->entry->type.array_lengths.size() == 0
+             && !((Variable*)symbol)->entry->is_global)
+                return addr;
             auto var = generate_addr();
             code.push_back(new IntermediateCode(
                 INSTR_MRMOV, var, addr, PLACEHOLDER, statement_label
@@ -89,12 +93,14 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
             auto var = generate_addr();
             if (!as_variable->entry->is_global)
             {
-                /* For local variables, the 'addr' field is the register storing
+                /* For local scalars, the 'addr' field is the register storing
+                   the value of the variable. 
+                   For local arrays, the 'addr' field is the register storing
                    the address of the variable. */
                 code.push_back(new IntermediateCode(
                     INSTR_RRMOV, var, as_variable->entry->addr, PLACEHOLDER, statement_label
                 ));
-                return var;
+                return var; // an address for arrays, and a value for scalars
             }
             /* For global variables, the 'addr' field is the absolute address 
                (i.e. an immediate). */
@@ -132,7 +138,14 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
                 code.push_back(new IntermediateCode(
                     INSTR_ALLOC, var, INT_SIZE * size, PLACEHOLDER, statement_label
                 ));
-                for (std::size_t i = 0; i < size; i++)
+                auto init_val0 = generate_addr();
+                code.push_back(new IntermediateCode(
+                    INSTR_IRMOV, init_val0, (std::size_t)(as_number->value[0]), PLACEHOLDER, statement_label
+                ));
+                code.push_back(new IntermediateCode(
+                    INSTR_RMMOV, var, init_val0, PLACEHOLDER, statement_label
+                ));
+                for (std::size_t i = 1; i < size; i++)
                 {
                     auto init_val = generate_addr();
                     code.push_back(new IntermediateCode(
@@ -284,9 +297,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
                instead of creating a copy of the array. */
             IndexExpression* as_idx = (IndexExpression*)symbol;
             auto operand1 = generate_code_for_exp(as_idx->children[0]); 
-            /* If the program passes semantic check, then 'operand1' must be a register
-               that stores a memory address. */
-            auto operand2 = generate_code_for_exp_as_rval(as_idx->children[1]);
+
             Type result_type = as_idx->type();
 
             std::size_t mul = 1;
@@ -294,6 +305,29 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
             {
                 mul *= len;
             } /* Scale factor of the offset. */
+
+            /* Compile-time calculation of index for constant indexing */
+            if (as_idx->children[1]->symbol_idx == SYMBOL_NUMBER)
+            {
+                auto offset_val = ((Number*)(as_idx->children[1]))->value[0] * mul * INT_SIZE;
+                if (offset_val == 0)
+                {
+                    return operand1;
+                }
+                auto offset = generate_addr();
+                code.push_back(new IntermediateCode(
+                    INSTR_IRMOV, offset, offset_val, PLACEHOLDER, statement_label
+                ));
+                auto var = generate_addr();
+                code.push_back(new IntermediateCode(
+                    INSTR_ADD, var, operand1, offset, statement_label
+                ));
+                return var;
+            }
+            /* If the program passes semantic check, then 'operand1' must be a register
+               that stores a memory address. */
+            auto operand2 = generate_code_for_exp_as_rval(as_idx->children[1]);
+
             auto mov_size = generate_addr();
             code.push_back(new IntermediateCode(
                 INSTR_IRMOV, mov_size, mul * INT_SIZE, PLACEHOLDER, statement_label
@@ -313,12 +347,9 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
         {
             AndExpression* as_and = (AndExpression*)symbol;
             auto addr = generate_addr();
-            code.push_back(new IntermediateCode(
-                INSTR_ALLOC, addr, INT_SIZE, PLACEHOLDER, statement_label
-            )); // must store result to memory since only single assignment
             auto operand1 = generate_code_for_exp_as_rval(as_and->children[0]);
             code.push_back(new IntermediateCode(
-                INSTR_RMMOV, addr, operand1, PLACEHOLDER, statement_label
+                INSTR_RRMOV, addr, operand1, PLACEHOLDER, statement_label
             ));
 
             auto next_instr = generate_label();
@@ -328,25 +359,18 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
 
             auto operand2 = generate_code_for_exp_as_rval(as_and->children[1]);
             code.push_back(new IntermediateCode(
-                INSTR_RMMOV, addr, operand2, PLACEHOLDER, statement_label
+                INSTR_RRMOV, addr, operand2, PLACEHOLDER, statement_label
             ));
-            statement_label = next_instr;
-            auto var = generate_addr();
-            code.push_back(new IntermediateCode(
-                INSTR_MRMOV, var, addr, PLACEHOLDER, statement_label
-            ));
-            return var;
+            statement_label.push_back(next_instr);
+            return addr;
         }
         case SYMBOL_OR:
         {
             OrExpression* as_or = (OrExpression*)symbol;
             auto addr = generate_addr();
-            code.push_back(new IntermediateCode(
-                INSTR_ALLOC, addr, INT_SIZE, PLACEHOLDER, statement_label
-            )); // must store result to memory since only single assignment
             auto operand1 = generate_code_for_exp_as_rval(as_or->children[0]);
             code.push_back(new IntermediateCode(
-                INSTR_RMMOV, addr, operand1, PLACEHOLDER, statement_label
+                INSTR_RRMOV, addr, operand1, PLACEHOLDER, statement_label
             ));
 
             auto next_instr = generate_label();
@@ -356,14 +380,10 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
 
             auto operand2 = generate_code_for_exp_as_rval(as_or->children[1]);
             code.push_back(new IntermediateCode(
-                INSTR_RMMOV, addr, operand2, PLACEHOLDER, statement_label
+                INSTR_RRMOV, addr, operand2, PLACEHOLDER, statement_label
             ));
-            statement_label = next_instr;
-            auto var = generate_addr();
-            code.push_back(new IntermediateCode(
-                INSTR_MRMOV, var, addr, PLACEHOLDER, statement_label
-            ));
-            return var;
+            statement_label.push_back(next_instr);
+            return addr;
         }
         case SYMBOL_FUNCTION:
         {
@@ -376,16 +396,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
                 if (arg_type.array_lengths.size() == 0) /* Scalar argument. */
                 {
                     /* Pass by value. */
-                    std::size_t value = generate_code_for_exp_as_rval(func_call->children[i]);
-                    /* Store a copy of the value in memory, and pass
-                       the pointer to function. */
-                    arg = generate_addr();
-                    code.push_back(new IntermediateCode(
-                        INSTR_ALLOC, arg, INT_SIZE, PLACEHOLDER, statement_label
-                    ));
-                    code.push_back(new IntermediateCode(
-                        INSTR_RMMOV, arg, value, PLACEHOLDER, statement_label
-                    ));
+                    arg = generate_code_for_exp_as_rval(func_call->children[i]);
                 }
                 else
                 {
