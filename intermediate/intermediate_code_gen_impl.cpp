@@ -43,3 +43,13 @@ void IntermediateCodeGenerator::print_code()
         printf("%s\n", code_line->to_str().c_str());
     }
 }
+
+std::vector<IntermediateCode*> IntermediateCodeGenerator::to_code()
+{
+    std::vector<IntermediateCode*> copy;
+    for (auto& code_line: code)
+    {
+        copy.push_back(new IntermediateCode(*code_line));
+    }
+    return copy;
+}

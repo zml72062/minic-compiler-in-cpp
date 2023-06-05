@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <map>
 #include "../parse/symbols.h"
 
 /************************************************************
@@ -174,6 +173,7 @@ public:
     ~IntermediateCodeGenerator();
     void generate_code();
     void print_code();
+    std::vector<IntermediateCode*> to_code();
 };
 
 

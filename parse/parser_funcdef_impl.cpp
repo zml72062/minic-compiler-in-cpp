@@ -178,7 +178,7 @@ int Parser::parse_funcdef_next_step(std::stack<int>& _states,
                 if (entry == nullptr)
                     return -1;
                 entry->type.add_ret_or_arg_type(Type(BASIC_TYPE_INT));
-                symbol_table->add_entry(SymbolTableEntry(next_lexeme.lex_name, BASIC_TYPE_INT));
+                symbol_table->add_entry(SymbolTableEntry(next_lexeme.lex_name, BASIC_TYPE_INT).local());
                 return 0;
             }
             fprintf(stderr, "Syntactical error: expected an identifier "

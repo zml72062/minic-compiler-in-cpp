@@ -76,3 +76,15 @@ void SymbolTableEntry::set_func_def(void* _func_def)
 {
     this->func_def = _func_def;
 }
+
+SymbolTableEntry& SymbolTableEntry::global()
+{
+    this->is_global = 1;
+    return *this;
+}
+
+SymbolTableEntry& SymbolTableEntry::local()
+{
+    this->is_global = 0;
+    return *this;
+}

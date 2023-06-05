@@ -6,7 +6,6 @@
 #define MAX_CODE_LENGTH 16384
 
 SymbolTable* symbol_table;
-std::map<std::size_t, std::string> index_to_label;
 
 int main(int argc, char** argv)
 {    

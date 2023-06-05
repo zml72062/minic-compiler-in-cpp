@@ -69,7 +69,10 @@ std::string IntermediateCode::to_str()
     switch (instr)
     {
         case INSTR_IRMOV:
-            return prefix + "  irmov  " + addr_to_str(dest) + ", " + std::to_string(loperand);
+            if (is_global(loperand))
+                return prefix + "  irmov  " + addr_to_str(dest) + ", " + addr_to_str(loperand);
+            else
+                return prefix + "  irmov  " + addr_to_str(dest) + ", " + std::to_string(loperand);
         case INSTR_RRMOV:
             return prefix + "  rrmov  " + addr_to_str(dest) + ", " + addr_to_str(loperand);
         case INSTR_RMMOV:

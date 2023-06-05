@@ -87,19 +87,17 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
         {
             Variable* as_variable = (Variable*)symbol;
             auto var = generate_addr();
-            if (as_variable->entry->init_exp.size() > 0)
+            if (!as_variable->entry->is_global)
             {
-                /* Non-empty 'init_exp' field, indicating a local variable.
-                   In this case, the 'addr' field is the register storing
+                /* For local variables, the 'addr' field is the register storing
                    the address of the variable. */
                 code.push_back(new IntermediateCode(
                     INSTR_RRMOV, var, as_variable->entry->addr, PLACEHOLDER, statement_label
                 ));
                 return var;
             }
-            /* Otherwise, the 'init_val' field will be non-empty, indicating a
-               global variable. In this case, the 'addr' field is the absolute
-               address (i.e. an immediate). */
+            /* For global variables, the 'addr' field is the absolute address 
+               (i.e. an immediate). */
             code.push_back(new IntermediateCode(
                 INSTR_IRMOV, var, as_variable->entry->addr, PLACEHOLDER, statement_label
             ));
@@ -298,7 +296,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
             } /* Scale factor of the offset. */
             auto mov_size = generate_addr();
             code.push_back(new IntermediateCode(
-                INSTR_IRMOV, mov_size, mul, PLACEHOLDER, statement_label
+                INSTR_IRMOV, mov_size, mul * INT_SIZE, PLACEHOLDER, statement_label
             ));
             auto offset = generate_addr();
             code.push_back(new IntermediateCode(

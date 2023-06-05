@@ -90,9 +90,14 @@ int Parser::parse_var_decl_next_step(std::stack<int>& _states,
                     return -1;
                 }
 
-                symbol_table->add_entry(
-                    SymbolTableEntry(name, BASIC_TYPE_INT)
-                );
+                if (symbol_table->parent_scope() == nullptr)
+                    symbol_table->add_entry(
+                        SymbolTableEntry(name, BASIC_TYPE_INT).global()
+                    );
+                else
+                    symbol_table->add_entry(
+                        SymbolTableEntry(name, BASIC_TYPE_INT).local()
+                    );
             }
             _states.pop();
             _states.push(VAR_DECL_GET_VAR_NAME);

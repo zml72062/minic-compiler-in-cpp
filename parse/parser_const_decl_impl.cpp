@@ -104,9 +104,14 @@ int Parser::parse_const_decl_next_step(std::stack<int>& _states,
                         return -1;
                     }
 
-                    symbol_table->add_entry(
-                        SymbolTableEntry(name, BASIC_TYPE_CONST_INT)
-                    );
+                    if (symbol_table->parent_scope() == nullptr)
+                        symbol_table->add_entry(
+                            SymbolTableEntry(name, BASIC_TYPE_CONST_INT).global()
+                        );
+                    else
+                        symbol_table->add_entry(
+                            SymbolTableEntry(name, BASIC_TYPE_CONST_INT).local()
+                        );
                 }
                 _states.pop();
                 _states.push(CONST_DECL_GET_CONST_NAME);

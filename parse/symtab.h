@@ -33,6 +33,7 @@ struct SymbolTableEntry
     std::vector<void*> init_exp;
     void* func_def;
     std::size_t addr;
+    int is_global;
 
 
     SymbolTableEntry();
@@ -49,6 +50,8 @@ struct SymbolTableEntry
     void set_init_exp(void* _init_exp);
     void set_init_exp(const std::vector<void*>& _init_exp);
     void set_func_def(void* _func_def);
+    SymbolTableEntry& global();
+    SymbolTableEntry& local();
     ~SymbolTableEntry() = default;
 };
 
@@ -79,6 +82,7 @@ public:
     void print_table();
     SymbolTableEntry* get_entry_if_contains(const char* _name);
     SymbolTableEntry* get_entry_if_contains_in_tree(const char* _name);
+    void to_global();
 };
 
 
