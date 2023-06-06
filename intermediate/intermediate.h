@@ -31,10 +31,12 @@
 */
 
 /**
- *  IRMOV dest, loperand
- *      Move the immediate 'loperand' to register 'dest'.
+ *  IRMOV dest, loperand, roperand
+ *      Move the immediate 'loperand' to register 'dest'. If 'roperand' is ADDR,
+ *      then 'loperand' will be understood as a global address.
  */
 #define INSTR_IRMOV 0
+#define ADDR 1
 /**
  *  RRMOV dest, loperand
  *      Move the value stored in register 'loperand' to register 'dest'.
@@ -142,11 +144,10 @@
  *    instructions that appears after register allocation.  *
  ***********************************************************/
 
-/* Three temporary registers, introduced to record memory address.
+/* Two temporary registers, introduced to record memory address.
    They will be callee-saved in target code generation. */
 #define DEST_TEMP 8
-#define LOPERAND_TEMP 9
-#define ROPERAND_TEMP 10
+#define OPERAND_TEMP 9
 
 /**
  *  SAVE loperand
@@ -155,15 +156,19 @@
  */
 #define INSTR_SAVE 26
 /**
- *  LOADL roperand
- *      Load the content of relative address 'roperand' to register LOPERAND_TEMP.
+ *  LOADO roperand
+ *      Load the content of relative address 'roperand' to register OPERAND_TEMP.
  */
-#define INSTR_LOADL 27
+#define INSTR_LOADO 27
 /**
- *  LOADR roperand
- *      Load the content of relative address 'roperand' to register ROPERAND_TEMP.
+ *  LOADD roperand
+ *      Load the content of relative address 'roperand' to register DEST_TEMP.
  */
-#define INSTR_LOADR 28
+#define INSTR_LOADD 28
+
+/************************************************************
+ *               End additional definitions.                *
+ ***********************************************************/
 
 
 extern SymbolTable* symbol_table;

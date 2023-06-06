@@ -73,8 +73,13 @@ struct RegisterAllocator
 
 struct MemorySpiller
 {
+    std::size_t addr;
     std::map<std::size_t, std::size_t> memory_map;
+    MemorySpiller();
+    std::size_t next_addr();
     void spill(std::vector<IntermediateCode*>& code);
 };
+
+void remove_useless_mov(std::vector<IntermediateCode*>& code);
 
 #endif

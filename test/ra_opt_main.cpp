@@ -37,7 +37,6 @@ int main(int argc, char** argv)
         exit(3);
     }
     auto code_out = gen.simplify_code();
-    gen.print_code(); 
     auto proc = make_procedures(code_out);
     for (auto&  p: proc)
     {
@@ -54,6 +53,9 @@ int main(int argc, char** argv)
             delete b;
         }
     }
+    MemorySpiller().spill(code_out);
+    remove_useless_mov(code_out);
+    printf("\n");
     for (auto& line: code_out)
     {
         printf("%s\n", line->to_str().c_str());

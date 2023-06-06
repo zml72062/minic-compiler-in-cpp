@@ -80,7 +80,7 @@ std::string IntermediateCode::to_str()
     switch (instr)
     {
         case INSTR_IRMOV:
-            if (is_global(loperand))
+            if (roperand)
                 return prefix + "  irmov  " + addr_to_str(dest) + ", " + addr_to_str(loperand);
             else
                 return prefix + "  irmov  " + addr_to_str(dest) + ", " + std::to_string((int)loperand);
@@ -136,10 +136,10 @@ std::string IntermediateCode::to_str()
             return prefix + "  glob   " + addr_to_str(loperand);
         case INSTR_SAVE:
             return prefix + "  save   " + std::to_string((int)loperand) + "(%pframe), %8";
-        case INSTR_LOADL:
+        case INSTR_LOADD:
+            return prefix + "  load   %8, " + std::to_string((int)roperand) + "(%pframe)";
+        case INSTR_LOADO:
             return prefix + "  load   %9, " + std::to_string((int)roperand) + "(%pframe)";
-        case INSTR_LOADR:
-            return prefix + "  load   %10, " + std::to_string((int)roperand) + "(%pframe)";
         default:
             return prefix;
     }

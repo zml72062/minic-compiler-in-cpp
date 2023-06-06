@@ -29,7 +29,8 @@ intermediate/intermediate_code_gen_block_stmt_impl.o \
 intermediate/intermediate_code_gen_global_impl.o
 
 ra_opt: ra_opt/procedure_impl.o ra_opt/basicblock_impl.o ra_opt/liveness_analysis_impl.o \
-ra_opt/procedure_utils_impl.o ra_opt/register_alloc_impl.o
+ra_opt/procedure_utils_impl.o ra_opt/register_alloc_impl.o ra_opt/spill_memory_impl.o \
+ra_opt/remove_useless_mov_impl.o
 
 clean:
 	rm -rf *.o lex/*.o test/main test/*.o parse/*.o intermediate/*.o ra_opt/*.o

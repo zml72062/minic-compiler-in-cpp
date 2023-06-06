@@ -105,7 +105,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
             /* For global variables, the 'addr' field is the absolute address 
                (i.e. an immediate). */
             code.push_back(new IntermediateCode(
-                INSTR_IRMOV, var, as_variable->entry->addr, PLACEHOLDER, statement_label
+                INSTR_IRMOV, var, as_variable->entry->addr, ADDR, statement_label
             ));
             /** NOTICE: we won't be concerned with where to put the global variables
              *  and functions, since this is the assembler and the linker's 
