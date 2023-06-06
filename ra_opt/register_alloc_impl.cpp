@@ -151,11 +151,16 @@ void RegisterModifier::modify(IntermediateCode* _code,
        'needed' is the set of formal registers requiring allocation for the
        instruction. */
     std::set<std::size_t> unused, needed;
-    std::set_difference(_before.begin(), _before.end(), 
-    _after.begin(), _after.end(), std::inserter(unused, unused.end()));
-    std::set_difference(_after.begin(), _after.end(), 
-    _before.begin(), _before.end(), std::inserter(needed, needed.end()));
-
+    for (auto& p: _before)
+    {
+        if (_after.find(p) == _after.end()) /* p not in '_after' */
+            unused.insert(p);
+    }
+    for (auto& p: _after)
+    {
+        if (_before.find(p) == _before.end())
+            needed.insert(p);
+    }
     for (auto& l: unused)
     {
         auto reg = this->alloc_table[l];

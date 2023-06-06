@@ -1,7 +1,9 @@
-CXX = g++
+CXX = clang++
 CXXFLAGS = -std=c++11 -O2 -g
 
-all:
+all: lex parse intermediate ra_opt codegen utils.o compiler.o
+	${CXX} -o compiler utils.o compiler.o lex/*.o parse/*.o intermediate/*.o \
+	ra_opt/*.o codegen/*.o
 
 test_lex: test/lex_main.o utils.o lex
 	${CXX} -o test/main lex/*.o test/*.o utils.o
@@ -30,7 +32,9 @@ intermediate/intermediate_code_gen_global_impl.o
 
 ra_opt: ra_opt/procedure_impl.o ra_opt/basicblock_impl.o ra_opt/liveness_analysis_impl.o \
 ra_opt/procedure_utils_impl.o ra_opt/register_alloc_impl.o ra_opt/spill_memory_impl.o \
-ra_opt/remove_useless_mov_impl.o
+ra_opt/remove_useless_mov_impl.o ra_opt/ra_opt_impl.o
+
+codegen: codegen/codegen_impl.o
 
 clean:
-	rm -rf *.o lex/*.o test/main test/*.o parse/*.o intermediate/*.o ra_opt/*.o
+	rm -rf *.o lex/*.o test/main test/*.o parse/*.o intermediate/*.o ra_opt/*.o codegen/*.o compiler

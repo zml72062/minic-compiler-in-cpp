@@ -270,3 +270,124 @@ std::pair<std::size_t, std::size_t> Procedure::register_range()
     }
     return {min_, max_ + 1};
 }
+
+bool Procedure::has_call()
+{
+    for (auto& code_line: code)
+    {
+        if (code_line->instr == INSTR_CALL)
+            return true;
+    }
+    return false;
+}
+
+std::size_t Procedure::max_call_args()
+{
+    std::size_t max_args = 0;
+    for (auto& code_line: code)
+    {
+        if (code_line->instr == INSTR_CALL && code_line->roperand > max_args)
+            max_args = code_line->roperand;
+    }
+    return max_args;
+}
+
+std::size_t Procedure::max_spilled_memory()
+{
+    std::size_t memory_min = (1 << 30), memory_max = 0;
+    for (auto& code_line: code)
+    {
+        if (code_line->instr == INSTR_SAVE)
+        {
+            auto rel_addr = code_line->loperand;
+            if (rel_addr < memory_min)
+                memory_min = rel_addr;
+            if (rel_addr > memory_max)
+                memory_max = rel_addr;
+        }
+        else if (code_line->instr == INSTR_LOADD ||
+                 code_line->instr == INSTR_LOADO)
+        {
+            auto rel_addr = code_line->roperand;
+            if (rel_addr < memory_min)
+                memory_min = rel_addr;
+            if (rel_addr > memory_max)
+                memory_max = rel_addr;
+        }
+    }
+    if (memory_max >= memory_min)
+        return memory_max - memory_min + INT_SIZE;
+    else
+        return 0;
+}
+
+std::size_t Procedure::max_allocated_memory()
+{
+    std::size_t memory = 0;
+    for (auto& code_line: code)
+    {
+        if (code_line->instr == INSTR_ALLOC)
+        {
+            memory += code_line->loperand;
+        }
+    }
+    return memory;
+}
+
+std::size_t Procedure::stack_move_value()
+{
+    /** The stack frame is like:
+     * 
+     *  --------------------------
+     *       (in ra register)
+     *        return address
+     *   (after current function
+     *         call finishes)
+     *
+     *    0 bytes if "is_leaf()",
+     *    otherwise PTR_SIZE.
+     *  --------------------------
+     *      saved s3 register
+     *  --------------------------
+     *      saved s2 register
+     *      (as OPERAND_TEMP)
+     *  --------------------------
+     *      saved s1 register
+     *       (as DEST_TEMP)
+     *  --------------------------
+     *      saved s0 register
+     *      (as frame pointer)
+     *  --------------------------   <---- s0 register here
+     *     place to save t0-t6
+     *    
+     *    0 bytes if "is_leaf()",
+     *    otherwise INT_SIZE * 7.
+     *  --------------------------
+     *     potential free space
+     *       due to alignment
+     *  --------------------------
+     *       allocated_memory
+     *  --------------------------
+     *        spilled_memory
+     *  --------------------------
+     *       place to save >8 
+     *           func args
+     *  --------------------------   <---- sp register here
+     */
+    std::size_t move_value = max_spilled_memory() + 
+                             max_allocated_memory() +
+                             4 * INT_SIZE;
+    auto max_args = max_call_args();
+    if (max_args > 8)
+    {
+        move_value += (max_args - 8) * INT_SIZE;
+    }
+    if (has_call())
+    {
+        move_value += (PTR_SIZE + 7 * INT_SIZE);
+    }
+    if (move_value % 16 == 0)
+        return move_value;
+    else
+        return (1 + move_value / 16) * 16;
+}

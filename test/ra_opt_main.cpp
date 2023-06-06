@@ -37,32 +37,10 @@ int main(int argc, char** argv)
         exit(3);
     }
     auto code_out = gen.simplify_code();
-    auto proc = make_procedures(code_out);
-    for (auto&  p: proc)
-    {
-        auto blocks = make_basic_blocks(p->code);
-
-        LivenessUpdater updater(blocks);
-        updater.calculate_liveness();
-
-        RegisterAllocator alloc(AllocationTable(p->register_range()));
-        alloc.allocate(updater);
-
-        for (auto & b: blocks)
-        {
-            delete b;
-        }
-    }
-    MemorySpiller().spill(code_out);
-    remove_useless_mov(code_out);
-    printf("\n");
+    register_alloc_optim(code_out);
     for (auto& line: code_out)
     {
         printf("%s\n", line->to_str().c_str());
-    }
-    for (auto& p: proc)
-    {
-        delete p;
     }
     for (auto& c: code_out)
     {

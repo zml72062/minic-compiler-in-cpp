@@ -12,6 +12,12 @@ void read_file(const char* filename, char* code, std::size_t num)
 {
     FILE* file = fopen(filename, "r");
 
+    if (file == nullptr)
+    {
+        fprintf(stderr, "Error reading file!\n");
+        exit(4);
+    }
+
     for (std::size_t i = 0; i < num; i++)
     {
         code[i] = fgetc(file);

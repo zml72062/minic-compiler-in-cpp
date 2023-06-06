@@ -16,6 +16,9 @@ struct Procedure
     std::pair<std::size_t, std::size_t> register_range();
     bool has_call();
     std::size_t max_call_args();
+    std::size_t max_spilled_memory();
+    std::size_t max_allocated_memory();
+    std::size_t stack_move_value();
 };
 
 std::vector<Procedure*> make_procedures(const std::vector<IntermediateCode*>& code);
@@ -81,5 +84,6 @@ struct MemorySpiller
 };
 
 void remove_useless_mov(std::vector<IntermediateCode*>& code);
+void register_alloc_optim(std::vector<IntermediateCode*>& code);
 
 #endif

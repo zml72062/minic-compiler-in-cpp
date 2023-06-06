@@ -183,11 +183,20 @@ std::vector<std::vector<std::set<std::size_t>>> LivenessUpdater::iterate_livenes
             std::set<std::size_t> without_def;
             std::set<std::size_t> with_use;
             /* without_def = new_liveness[n - 1].back() - def_ */
-            std::set_difference(new_liveness[n - 1].back().begin(), new_liveness[n - 1].back().end(), 
-            def_.begin(), def_.end(), std::inserter(without_def, without_def.end()));
+            for (auto& p: new_liveness[n - 1].back())
+            {
+                if (def_.find(p) == def_.end()) 
+                    without_def.insert(p);
+            }
             /* with_use = without_def + use_ */
-            std::set_union(without_def.begin(), without_def.end(), use_.begin(), use_.end(),
-            std::inserter(with_use, with_use.end()));
+            for (auto& p: without_def)
+            {
+                with_use.insert(p);
+            }
+            for (auto& p: use_)
+            {
+                with_use.insert(p);
+            }
             new_liveness[n - 1].push_back(with_use);
         }
     }
