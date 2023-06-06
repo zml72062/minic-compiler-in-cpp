@@ -37,21 +37,26 @@ int main(int argc, char** argv)
         exit(3);
     }
     auto code_out = gen.simplify_code();
-    gen.print_code();
+    gen.print_code(); 
     auto proc = make_procedures(code_out);
-    for (auto& p: proc)
+    for (auto&  p: proc)
     {
         auto blocks = make_basic_blocks(p->code);
-        auto length = blocks.size();
-        for (std::size_t i = 0; i < length; i++)
-        {
-            printf("Block %lu:\n", i);
-            blocks[i]->print_code();
-        }
+
+        LivenessUpdater updater(blocks);
+        updater.calculate_liveness();
+
+        RegisterAllocator alloc(AllocationTable(p->register_range()));
+        alloc.allocate(updater);
+
         for (auto & b: blocks)
         {
             delete b;
         }
+    }
+    for (auto& line: code_out)
+    {
+        printf("%s\n", line->to_str().c_str());
     }
     for (auto& p: proc)
     {

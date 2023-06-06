@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -O2
+CXXFLAGS = -std=c++11 -O2 -g
 
 all:
 
@@ -28,7 +28,8 @@ intermediate/intermediate_code_impl.o intermediate/intermediate_code_gen_exp_imp
 intermediate/intermediate_code_gen_block_stmt_impl.o \
 intermediate/intermediate_code_gen_global_impl.o
 
-ra_opt: ra_opt/procedure_impl.o ra_opt/basicblock_impl.o
+ra_opt: ra_opt/procedure_impl.o ra_opt/basicblock_impl.o ra_opt/liveness_analysis_impl.o \
+ra_opt/procedure_utils_impl.o ra_opt/register_alloc_impl.o
 
 clean:
 	rm -rf *.o lex/*.o test/main test/*.o parse/*.o intermediate/*.o ra_opt/*.o

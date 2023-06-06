@@ -137,6 +137,35 @@
  *    End definition of the intermediate representation.    *
  ************************************************************/
 
+/************************************************************
+ *    Additional definitions for special registers and      *
+ *    instructions that appears after register allocation.  *
+ ***********************************************************/
+
+/* Three temporary registers, introduced to record memory address.
+   They will be callee-saved in target code generation. */
+#define DEST_TEMP 8
+#define LOPERAND_TEMP 9
+#define ROPERAND_TEMP 10
+
+/**
+ *  SAVE loperand
+ *      Save the register DEST_TEMP to the relative address 'loperand', which
+ *      can be, for instance, with respect to the frame pointer.
+ */
+#define INSTR_SAVE 26
+/**
+ *  LOADL roperand
+ *      Load the content of relative address 'roperand' to register LOPERAND_TEMP.
+ */
+#define INSTR_LOADL 27
+/**
+ *  LOADR roperand
+ *      Load the content of relative address 'roperand' to register ROPERAND_TEMP.
+ */
+#define INSTR_LOADR 28
+
+
 extern SymbolTable* symbol_table;
 
 struct IntermediateCode

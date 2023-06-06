@@ -147,8 +147,8 @@ std::vector<BasicBlock*> make_basic_blocks(const std::vector<IntermediateCode*>&
     {
         for (auto& j: successors[i])
         {
-            blocks[i]->successors.push_back(blocks[j]);
-            blocks[j]->predecessors.push_back(blocks[i]);
+            blocks[i]->successors.push_back(j);
+            blocks[j]->predecessors.push_back(i);
         }
     }
     return blocks;

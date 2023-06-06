@@ -23,6 +23,11 @@ static bool is_global(std::size_t addr_or_label)
     return ((int)addr_or_label) > (1 << 30);
 }
 
+static bool is_memory(std::size_t addr_or_label)
+{
+    return ((int)addr_or_label) > (1 << 29);
+}
+
 static std::string addr_to_str(std::size_t addr)
 {
     if (is_global(addr))
@@ -34,6 +39,10 @@ static std::string addr_to_str(std::size_t addr)
                 return entry->name;
             }
         }
+    }
+    else if (is_memory(addr))
+    {
+        return "%mem" + std::to_string(addr - (1 << 29));
     }
     return "%" + std::to_string(addr);
 }
@@ -125,6 +134,12 @@ std::string IntermediateCode::to_str()
             return prefix + "  ret    " + addr_to_str(loperand);
         case INSTR_GLOB:
             return prefix + "  glob   " + addr_to_str(loperand);
+        case INSTR_SAVE:
+            return prefix + "  save   " + std::to_string((int)loperand) + "(%pframe), %8";
+        case INSTR_LOADL:
+            return prefix + "  load   %9, " + std::to_string((int)roperand) + "(%pframe)";
+        case INSTR_LOADR:
+            return prefix + "  load   %10, " + std::to_string((int)roperand) + "(%pframe)";
         default:
             return prefix;
     }
