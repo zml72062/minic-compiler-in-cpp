@@ -49,12 +49,9 @@ void IntermediateCodeGenerator::generate_code()
             generate_code_for_block_and_statement(((FunctionDef*)entry->func_def)->children[0]);
             /* If control flow tries to move outside the function block, 
                we must stop it by adding return statements. */
-            if (statement_label.size() > 0)
-            {
-                code.push_back(new IntermediateCode(
-                    INSTR_RET, PLACEHOLDER, PLACEHOLDER, PLACEHOLDER, statement_label
-                ));
-            }
+            code.push_back(new IntermediateCode(
+                INSTR_RET, PLACEHOLDER, PLACEHOLDER, PLACEHOLDER, statement_label
+            ));
             /* Therefore, after every function definition, 'statement_label' must be 0.
                We don't need to worry about duplicate label at the beginning of a function. */
         }
