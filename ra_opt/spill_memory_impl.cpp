@@ -277,10 +277,8 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         }
                         else
                         {
-                            printf("Here %lu\n", roperand - (1 << 29));
                             code.insert(code.begin() + i + 1,
                             new IntermediateCode(instr, dest, loperand, DEST_TEMP, labels));
-                            printf("%s\n", (*(code.begin() + i + 1))->to_str().c_str());
                             i++;
                             length++;
                         }
