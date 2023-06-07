@@ -63,6 +63,7 @@
 /**
  *  NEG dest, loperand
  *  NOT dest, loperand
+ *  BOOL dest, loperand
  *  ADD dest, loperand, roperand
  *  SUB dest, loperand, roperand
  *  MUL dest, loperand, roperand
@@ -80,60 +81,61 @@
  */
 #define INSTR_NEG 5
 #define INSTR_NOT 6
-#define INSTR_ADD 7
-#define INSTR_SUB 8
-#define INSTR_MUL 9
-#define INSTR_DIV 10
-#define INSTR_MOD 11
-#define INSTR_GT 12
-#define INSTR_GEQ 13
-#define INSTR_LT 14
-#define INSTR_LEQ 15
-#define INSTR_EQ 16
-#define INSTR_NEQ 17
+#define INSTR_BOOL 7
+#define INSTR_ADD 8
+#define INSTR_SUB 9
+#define INSTR_MUL 10
+#define INSTR_DIV 11
+#define INSTR_MOD 12
+#define INSTR_GT 13
+#define INSTR_GEQ 14
+#define INSTR_LT 15
+#define INSTR_LEQ 16
+#define INSTR_EQ 17
+#define INSTR_NEQ 18
 /**
  *  JMP roperand
  *      Jump to the instruction with label 'roperand'.
  */
-#define INSTR_JMP 18
+#define INSTR_JMP 19
 /**
  *  JE  loperand, roperand
  *  JNE loperand, roperand
  *      Jump to the instruction with label 'roperand' if 'loperand == 0' or
  *      'loperand != 0', where 'loperand' is a register.
  */
-#define INSTR_JE 19
-#define INSTR_JNE 20
+#define INSTR_JE 20
+#define INSTR_JNE 21
 /**
  *  ARG loperand, roperand
  *      Move the value stored in 'roperand' to the register for the 'loperand'-th
  *      argument.
  */
-#define INSTR_ARG 21
+#define INSTR_ARG 22
 /**
  *  LARG loperand, roperand
  *      Move the value stored in the register for the 'roperand'-th argument to
  *      register 'loperand'.
  */
-#define INSTR_LARG 22
+#define INSTR_LARG 23
 /**
  *  CALL dest, loperand, roperand
  *      Call the function whose label is 'loperand' with 'roperand' arguments, and
  *      store the return value at 'dest'.
  */
-#define INSTR_CALL 23
+#define INSTR_CALL 24
 /**
  *  RET loperand
  *      Move the value stored in 'loperand' to the return value register and 
  *      return. If 'loperand == 0', then no return value.
  */
-#define INSTR_RET 24
+#define INSTR_RET 25
 /**
  *  GLOB loperand
  *      Declare that the immediate 'loperand' is an address for global symbol,
  *      whose memory allocation is handled by operating system.
  */
-#define INSTR_GLOB 25
+#define INSTR_GLOB 26
 
 /************************************************************
  *    End definition of the intermediate representation.    *
@@ -154,17 +156,17 @@
  *      Save the register DEST_TEMP to the relative address 'loperand', which
  *      can be, for instance, with respect to the frame pointer.
  */
-#define INSTR_SAVE 26
+#define INSTR_SAVE 27
 /**
  *  LOADO roperand
  *      Load the content of relative address 'roperand' to register OPERAND_TEMP.
  */
-#define INSTR_LOADO 27
+#define INSTR_LOADO 28
 /**
  *  LOADD roperand
  *      Load the content of relative address 'roperand' to register DEST_TEMP.
  */
-#define INSTR_LOADD 28
+#define INSTR_LOADD 29
 
 /************************************************************
  *               End additional definitions.                *

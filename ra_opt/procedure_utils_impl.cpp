@@ -69,6 +69,16 @@ std::pair<std::size_t, std::size_t> Procedure::register_range()
                 if (code_line->loperand > max_)
                     max_ = code_line->loperand;
                 break;
+            case INSTR_BOOL:
+                if (code_line->dest < min_)
+                    min_ = code_line->dest;
+                if (code_line->dest > max_)
+                    max_ = code_line->dest;
+                if (code_line->loperand < min_)
+                    min_ = code_line->loperand;
+                if (code_line->loperand > max_)
+                    max_ = code_line->loperand;
+                break;
             case INSTR_ADD:
                 if (code_line->dest < min_)
                     min_ = code_line->dest;

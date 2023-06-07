@@ -96,6 +96,8 @@ std::string IntermediateCode::to_str()
             return prefix + "  neg    " + addr_to_str(dest) + ", " + addr_to_str(loperand);
         case INSTR_NOT:
             return prefix + "  not    " + addr_to_str(dest) + ", " + addr_to_str(loperand);
+        case INSTR_BOOL:
+            return prefix + "  bool   " + addr_to_str(dest) + ", " + addr_to_str(loperand);
         case INSTR_ADD:
             return prefix + "  add    " + addr_to_str(dest) + ", " + addr_to_str(loperand) + ", " + addr_to_str(roperand);
         case INSTR_SUB:

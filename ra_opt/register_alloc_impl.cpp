@@ -47,6 +47,7 @@ static void modify_code_use(IntermediateCode* code, const AllocationTable& alloc
             return;
         case INSTR_NEG:
         case INSTR_NOT:
+        case INSTR_BOOL:
             code->loperand = alloc_table[code->loperand];
             return;
         case INSTR_ADD:
@@ -107,6 +108,7 @@ static void modify_code_def(IntermediateCode* code, const AllocationTable& alloc
             return;
         case INSTR_NEG:
         case INSTR_NOT:
+        case INSTR_BOOL:
             code->dest = alloc_table[code->dest];
             return;
         case INSTR_ADD:

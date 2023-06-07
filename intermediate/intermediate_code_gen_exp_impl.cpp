@@ -349,7 +349,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
             auto addr = generate_addr();
             auto operand1 = generate_code_for_exp_as_rval(as_and->children[0]);
             code.push_back(new IntermediateCode(
-                INSTR_RRMOV, addr, operand1, PLACEHOLDER, statement_label
+                INSTR_BOOL, addr, operand1, PLACEHOLDER, statement_label
             ));
 
             auto next_instr = generate_label();
@@ -359,7 +359,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
 
             auto operand2 = generate_code_for_exp_as_rval(as_and->children[1]);
             code.push_back(new IntermediateCode(
-                INSTR_RRMOV, addr, operand2, PLACEHOLDER, statement_label
+                INSTR_BOOL, addr, operand2, PLACEHOLDER, statement_label
             ));
             statement_label.push_back(next_instr);
             return addr;
@@ -370,7 +370,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
             auto addr = generate_addr();
             auto operand1 = generate_code_for_exp_as_rval(as_or->children[0]);
             code.push_back(new IntermediateCode(
-                INSTR_RRMOV, addr, operand1, PLACEHOLDER, statement_label
+                INSTR_BOOL, addr, operand1, PLACEHOLDER, statement_label
             ));
 
             auto next_instr = generate_label();
@@ -380,7 +380,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
 
             auto operand2 = generate_code_for_exp_as_rval(as_or->children[1]);
             code.push_back(new IntermediateCode(
-                INSTR_RRMOV, addr, operand2, PLACEHOLDER, statement_label
+                INSTR_BOOL, addr, operand2, PLACEHOLDER, statement_label
             ));
             statement_label.push_back(next_instr);
             return addr;

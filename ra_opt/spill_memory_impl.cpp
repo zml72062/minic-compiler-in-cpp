@@ -121,6 +121,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
             case INSTR_MRMOV:
             case INSTR_NEG:
             case INSTR_NOT:
+            case INSTR_BOOL:
                 if (is_memory(dest) || is_memory(loperand))
                 {
                     delete code_line;

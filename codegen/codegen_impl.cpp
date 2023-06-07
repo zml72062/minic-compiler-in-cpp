@@ -212,6 +212,8 @@ std::string to_asm(IntermediateCode* code,
             return prefix + "  sub  " + reg_to_str(dest) + ", x0, " + reg_to_str(loperand);
         case INSTR_NOT:
             return prefix + "  seqz " + reg_to_str(dest) + ", " + reg_to_str(loperand);
+        case INSTR_BOOL:
+            return prefix + "  snez " + reg_to_str(dest) + ", " + reg_to_str(loperand);
         case INSTR_ADD:
             return prefix + "  add  " + reg_to_str(dest) + ", " + reg_to_str(loperand) + ", " + reg_to_str(roperand);
         case INSTR_SUB:

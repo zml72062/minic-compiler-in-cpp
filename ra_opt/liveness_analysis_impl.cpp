@@ -31,6 +31,8 @@ static std::set<std::size_t> use(IntermediateCode* code)
             return std::set<std::size_t>({code->loperand});
         case INSTR_NOT:
             return std::set<std::size_t>({code->loperand});
+        case INSTR_BOOL:
+            return std::set<std::size_t>({code->loperand});
         case INSTR_ADD:
             return std::set<std::size_t>({code->loperand, code->roperand});
         case INSTR_SUB:
@@ -93,6 +95,8 @@ static std::set<std::size_t> def(IntermediateCode* code)
         case INSTR_NEG:
             return std::set<std::size_t>({code->dest});
         case INSTR_NOT:
+            return std::set<std::size_t>({code->dest});
+        case INSTR_BOOL:
             return std::set<std::size_t>({code->dest});
         case INSTR_ADD:
             return std::set<std::size_t>({code->dest});
