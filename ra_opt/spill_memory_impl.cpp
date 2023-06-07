@@ -22,9 +22,9 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
     {
         auto code_line = code[i];
         auto dest = code_line->dest, loperand = code_line->loperand,
-            roperand = code_line->roperand;
+            roperand = code_line->roperand, instr = code_line->instr;
         std::vector<std::size_t> labels(code_line->labels);
-        switch (code_line->instr)
+        switch (instr)
         {
             case INSTR_ALLOC:
             case INSTR_IRMOV:
@@ -35,7 +35,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                     code.erase(code.begin() + i);
                     /* Move immediate to DEST_TEMP */
                     code.insert(code.begin() + i,
-                    new IntermediateCode(code_line->instr, DEST_TEMP, loperand, roperand, labels));
+                    new IntermediateCode(instr, DEST_TEMP, loperand, roperand, labels));
                     /* Save DEST_TEMP to dest */
                     try
                     {
@@ -58,7 +58,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                     delete code_line;
                     code.erase(code.begin() + i);
                     code.insert(code.begin() + i,
-                    new IntermediateCode(code_line->instr, PLACEHOLDER, DEST_TEMP, roperand, labels));
+                    new IntermediateCode(instr, PLACEHOLDER, DEST_TEMP, roperand, labels));
                     /* Save DEST_TEMP to dest */
                     try
                     {
@@ -131,7 +131,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         code.insert(code.begin() + i,
                         new IntermediateCode(INSTR_LOADD, PLACEHOLDER, PLACEHOLDER, memory_map.at(loperand), labels));
                         code.insert(code.begin() + i + 1,
-                        new IntermediateCode(code_line->instr, DEST_TEMP, DEST_TEMP, roperand, labels));
+                        new IntermediateCode(instr, DEST_TEMP, DEST_TEMP, roperand, labels));
                         try
                         {
                             code.insert(code.begin() + i + 2,
@@ -151,14 +151,14 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         code.insert(code.begin() + i,
                         new IntermediateCode(INSTR_LOADD, PLACEHOLDER, PLACEHOLDER, memory_map.at(loperand), labels));
                         code.insert(code.begin() + i + 1,
-                        new IntermediateCode(code_line->instr, dest, DEST_TEMP, roperand, labels));
+                        new IntermediateCode(instr, dest, DEST_TEMP, roperand, labels));
                         i++;
                         length++;
                     }
                     else if (is_memory(dest) && !is_memory(loperand))
                     {
                         code.insert(code.begin() + i,
-                        new IntermediateCode(code_line->instr, DEST_TEMP, loperand, roperand, labels));
+                        new IntermediateCode(instr, DEST_TEMP, loperand, roperand, labels));
                         try
                         {
                             code.insert(code.begin() + i + 1,
@@ -199,7 +199,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         if (is_memory(dest))
                         {
                             code.insert(code.begin() + i + 2,
-                            new IntermediateCode(code_line->instr, DEST_TEMP, OPERAND_TEMP, DEST_TEMP, labels));
+                            new IntermediateCode(instr, DEST_TEMP, OPERAND_TEMP, DEST_TEMP, labels));
                             try
                             {
                                 code.insert(code.begin() + i + 3,
@@ -217,7 +217,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         else
                         {
                             code.insert(code.begin() + i + 2,
-                            new IntermediateCode(code_line->instr, dest, OPERAND_TEMP, DEST_TEMP, labels));
+                            new IntermediateCode(instr, dest, OPERAND_TEMP, DEST_TEMP, labels));
                             i += 2;
                             length += 2;
                         }
@@ -229,7 +229,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         if (is_memory(dest))
                         {
                             code.insert(code.begin() + i + 1,
-                            new IntermediateCode(code_line->instr, DEST_TEMP, OPERAND_TEMP, roperand, labels));
+                            new IntermediateCode(instr, DEST_TEMP, OPERAND_TEMP, roperand, labels));
                             try
                             {
                                 code.insert(code.begin() + i + 2,
@@ -247,7 +247,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         else
                         {
                             code.insert(code.begin() + i + 1,
-                            new IntermediateCode(code_line->instr, dest, OPERAND_TEMP, roperand, labels));
+                            new IntermediateCode(instr, dest, OPERAND_TEMP, roperand, labels));
                             i++;
                             length++;
                         }
@@ -259,7 +259,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         if (is_memory(dest))
                         {
                             code.insert(code.begin() + i + 1,
-                            new IntermediateCode(code_line->instr, DEST_TEMP, loperand, DEST_TEMP, labels));
+                            new IntermediateCode(instr, DEST_TEMP, loperand, DEST_TEMP, labels));
                             try
                             {
                                 code.insert(code.begin() + i + 2,
@@ -276,8 +276,10 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                         }
                         else
                         {
+                            printf("Here %lu\n", roperand - (1 << 29));
                             code.insert(code.begin() + i + 1,
-                            new IntermediateCode(code_line->instr, dest, loperand, DEST_TEMP, labels));
+                            new IntermediateCode(instr, dest, loperand, DEST_TEMP, labels));
+                            printf("%s\n", (*(code.begin() + i + 1))->to_str().c_str());
                             i++;
                             length++;
                         }
@@ -285,7 +287,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                     else
                     {
                         code.insert(code.begin() + i,
-                        new IntermediateCode(code_line->instr, DEST_TEMP, loperand, roperand, labels));
+                        new IntermediateCode(instr, DEST_TEMP, loperand, roperand, labels));
                         try
                         {
                             code.insert(code.begin() + i + 1,
@@ -351,7 +353,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                     code.insert(code.begin() + i,
                     new IntermediateCode(INSTR_LOADD, PLACEHOLDER, PLACEHOLDER, memory_map.at(loperand), labels));
                     code.insert(code.begin() + i + 1,
-                    new IntermediateCode(code_line->instr, dest, DEST_TEMP, roperand, labels));
+                    new IntermediateCode(instr, dest, DEST_TEMP, roperand, labels));
                     i++;
                     length++;
                 }
@@ -365,7 +367,7 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                     code.insert(code.begin() + i,
                     new IntermediateCode(INSTR_LOADD, PLACEHOLDER, PLACEHOLDER, memory_map.at(roperand), labels));
                     code.insert(code.begin() + i + 1,
-                    new IntermediateCode(code_line->instr, dest, loperand, DEST_TEMP, labels));
+                    new IntermediateCode(instr, dest, loperand, DEST_TEMP, labels));
                     i++;
                     length++;
                 }

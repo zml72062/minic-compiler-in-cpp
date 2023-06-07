@@ -79,6 +79,7 @@ int main(int argc, char** argv)
         delete symbol_table;
         exit(3);
     }
+
     auto code_out = gen.simplify_code();
 
     /* Optimization and register allocation. */
