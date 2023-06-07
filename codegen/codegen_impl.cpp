@@ -18,6 +18,18 @@ void CodeGenerator::generate_code(std::ostream& file)
     std::size_t func_idx = 0;
     for (auto& entry: symbol_table->get_entries())
     {
+        /* Skip definition for SysY built-in functions. */
+        if (entry->name == "getint" ||
+            entry->name == "getch" ||
+            entry->name == "getarray" ||
+            entry->name == "putint" ||
+            entry->name == "putch" ||
+            entry->name == "putarray" ||
+            entry->name == "starttime" ||
+            entry->name == "stoptime")
+        {
+            continue;
+        }
         if (entry->type.basic_type == BASIC_TYPE_INT)
         {
             file << "  .data\n"

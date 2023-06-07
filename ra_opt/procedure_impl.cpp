@@ -23,6 +23,18 @@ std::vector<Procedure*> make_procedures(const std::vector<IntermediateCode*>& co
     std::size_t start = 0;
     for (auto& symtab_entry: symbol_table->get_entries())
     {
+        /* Skip definition for SysY built-in functions. */
+        if (symtab_entry->name == "getint" ||
+            symtab_entry->name == "getch" ||
+            symtab_entry->name == "getarray" ||
+            symtab_entry->name == "putint" ||
+            symtab_entry->name == "putch" ||
+            symtab_entry->name == "putarray" ||
+            symtab_entry->name == "starttime" ||
+            symtab_entry->name == "stoptime")
+        {
+            continue;
+        }
         if (symtab_entry->type.basic_type == BASIC_TYPE_FUNC)
         {
             while (start < length)
