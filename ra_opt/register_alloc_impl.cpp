@@ -183,47 +183,17 @@ void RegisterModifier::modify(IntermediateCode* _code,
     modify_code_def(_code, this->alloc_table);
 }
 
-RegisterAllocator::RegisterAllocator(const AllocationTable& _alloc_table): alloc_table(_alloc_table)
+RegisterAllocator::RegisterAllocator(const AllocationTable& _alloc_table): modifier(_alloc_table)
 {
 
 }
 
-void RegisterAllocator::allocate(LivenessUpdater& _updater)
+void RegisterAllocator::allocate(const std::vector<IntermediateCode*>& _code,
+                                 const std::vector<std::set<std::size_t>>& _global_liveness)
 {
-    auto blocks = _updater.basic_blocks;
-    auto liveness = _updater.liveness;
-    /* Breadth first search. */
-    std::queue<std::size_t> q;
-    std::queue<AllocationTable*> tables;
-    q.push(0);
-    tables.push(new AllocationTable(alloc_table));
-    std::set<std::size_t> visited;
-    visited.insert(0);
-    while (!q.empty())
+    auto num_lines = _code.size();
+    for (std::size_t i = 0; i < num_lines; i++)
     {
-        auto cur_block_idx = q.front();
-        auto cur_table = tables.front();
-        q.pop();
-        tables.pop();
-
-        RegisterModifier r(*cur_table);
-        auto num_lines = blocks[cur_block_idx]->code.size();
-        for (std::size_t i = 0; i < num_lines; i++)
-        {
-            r.modify(blocks[cur_block_idx]->code[i],
-                     liveness[cur_block_idx][num_lines - i],
-                     liveness[cur_block_idx][num_lines - i - 1]);
-        }
-
-        for (auto& s: blocks[cur_block_idx]->successors)
-        {
-            if (visited.find(s) == visited.end()) /* s not in 'visited' */
-            {
-                q.push(s);
-                visited.insert(s);
-                tables.push(new AllocationTable(r.alloc_table));
-            }
-        }
-        delete cur_table;
+        modifier.modify(_code[i], _global_liveness[i], _global_liveness[i + 1]);
     }
 }

@@ -25,7 +25,8 @@ std::vector<Procedure*> make_procedures(const std::vector<IntermediateCode*>& co
 
 struct BasicBlock
 {
-    BasicBlock(const std::vector<IntermediateCode*>& _code);
+    BasicBlock(const std::vector<IntermediateCode*>& _code, std::pair<std::size_t, std::size_t> _line_range);
+    std::pair<std::size_t, std::size_t> line_range;
     std::vector<std::size_t> predecessors;
     std::vector<std::size_t> successors;
     std::vector<IntermediateCode*> code;
@@ -44,6 +45,7 @@ struct LivenessUpdater
     LivenessUpdater(const std::vector<BasicBlock*>& _basic_blocks);
     std::vector<std::vector<std::set<std::size_t>>> iterate_liveness();
     void calculate_liveness();
+    std::vector<std::set<std::size_t>> to_global_liveness(std::size_t code_length);
 };
 
 /**** Helper class for Register Allocation ****/
@@ -69,9 +71,10 @@ struct RegisterModifier
 
 struct RegisterAllocator
 {
-    AllocationTable alloc_table;
+    RegisterModifier modifier;
     RegisterAllocator(const AllocationTable& _alloc_table);
-    void allocate(LivenessUpdater& _updater);
+    void allocate(const std::vector<IntermediateCode*>& _code, 
+                  const std::vector<std::set<std::size_t>>& _global_liveness);
 };
 
 struct MemorySpiller

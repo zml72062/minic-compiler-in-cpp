@@ -139,7 +139,7 @@ std::vector<BasicBlock*> make_basic_blocks(const std::vector<IntermediateCode*>&
     std::vector<BasicBlock*> blocks;
     for (auto& pair: basic_block_idx)
     {
-        blocks.push_back(new BasicBlock(make_code_weakcopy(code, pair)));
+        blocks.push_back(new BasicBlock(make_code_weakcopy(code, pair), pair));
     }
     auto successors = find_succ(code);
     auto length = blocks.size();
@@ -154,9 +154,10 @@ std::vector<BasicBlock*> make_basic_blocks(const std::vector<IntermediateCode*>&
     return blocks;
 }
 
-BasicBlock::BasicBlock(const std::vector<IntermediateCode*>& _code)
+BasicBlock::BasicBlock(const std::vector<IntermediateCode*>& _code, std::pair<std::size_t, std::size_t> _line_range)
 {
     code = _code;
+    line_range = _line_range;
 }
 
 void BasicBlock::print_code()

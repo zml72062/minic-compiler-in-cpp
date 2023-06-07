@@ -80,8 +80,10 @@ int main(int argc, char** argv)
         exit(3);
     }
     auto code_out = gen.simplify_code();
+
     /* Optimization and register allocation. */
     register_alloc_optim(code_out);
+
     /* Code generation. */
     CodeGenerator codegen(code_out);
     std::ofstream out_f(argv[4]);

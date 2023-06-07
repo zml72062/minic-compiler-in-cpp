@@ -1,4 +1,5 @@
 #include "basicblock.h"
+#include <map>
 
 LivenessUpdater::LivenessUpdater(const std::vector<BasicBlock*>& _basic_blocks)
 {
@@ -212,4 +213,66 @@ void LivenessUpdater::calculate_liveness()
         liveness = new_liveness;
         new_liveness = iterate_liveness();
     } while (new_liveness != liveness);
+}
+
+std::vector<std::set<std::size_t>> 
+LivenessUpdater::to_global_liveness(std::size_t code_length)
+{
+    std::vector<std::pair<std::set<std::size_t>, std::set<std::size_t>>>
+    global_liveness(code_length);
+    std::size_t n_blocks = basic_blocks.size();
+    for (std::size_t i = 0; i < n_blocks; i++)
+    {
+        auto block_i = basic_blocks[i];
+        for (auto j = block_i->line_range.first;
+             j < block_i->line_range.second; j++)
+        {
+            global_liveness[j] = {liveness[i][block_i->line_range.second - j],
+                                  liveness[i][block_i->line_range.second - j - 1]};
+        }
+    }
+    std::vector<std::set<std::size_t>> combined_liveness(code_length + 1);
+    for (std::size_t i = 0; i < code_length; i++)
+    {
+        for (auto& s: global_liveness[i].first)
+        {
+            combined_liveness[i].insert(s);
+        }
+        for (auto& s: global_liveness[i].second)
+        {
+            combined_liveness[i + 1].insert(s);
+        }
+    }
+    std::map<std::size_t, std::size_t> start, end;
+    for (std::size_t i = 0; i <= code_length; i++)
+    {
+        auto s = combined_liveness[i];
+        for (auto& elem: s)
+        {
+            try
+            {
+                start.at(elem);
+            } catch (const std::out_of_range& e)
+            {
+                start[elem] = i;
+            }
+            try
+            {
+                if (end.at(elem) < i)
+                    end[elem] = i;
+            } catch (const std::out_of_range& e)
+            {
+                end[elem] = i;
+            }
+        }
+    }
+    for (auto& pair: start)
+    {
+        auto start_idx = pair.second, end_idx = end[pair.first];
+        for (auto i = start_idx; i <= end_idx; i++)
+        {
+            combined_liveness[i].insert(pair.first);
+        }
+    }
+    return combined_liveness;
 }

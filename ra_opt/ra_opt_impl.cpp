@@ -12,10 +12,11 @@ void register_alloc_optim(std::vector<IntermediateCode*>& code)
         /* Liveness analysis. */
         LivenessUpdater updater(blocks);
         updater.calculate_liveness();
+        auto global_liveness = updater.to_global_liveness(code.size());
 
         /* Register allocation. */
         RegisterAllocator alloc(AllocationTable(p->register_range()));
-        alloc.allocate(updater);
+        alloc.allocate(code, global_liveness);
 
         for (auto & b: blocks)
         {
