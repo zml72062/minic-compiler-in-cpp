@@ -373,6 +373,16 @@ void MemorySpiller::spill(std::vector<IntermediateCode*>& code)
                     length++;
                 }
                 break;
+            case INSTR_GLOB:
+                for (auto& entry: symbol_table->get_entries())
+                {
+                    if (entry->addr == loperand && entry->type.basic_type == BASIC_TYPE_FUNC)
+                    {
+                        addr = 0;
+                        break;
+                    }
+                }
+                break;
             default:
                 break;
         }

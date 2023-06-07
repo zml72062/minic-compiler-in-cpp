@@ -278,7 +278,10 @@ std::pair<std::size_t, std::size_t> Procedure::register_range()
                 break;
         }
     }
-    return {min_, max_ + 1};
+    if (min_ <= max_)
+        return {min_, max_ + 1};
+    else
+        return {0, 0};
 }
 
 bool Procedure::has_call()

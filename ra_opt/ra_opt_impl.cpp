@@ -1,4 +1,5 @@
 #include "basicblock.h"
+#include "../utils.h"
 
 void register_alloc_optim(std::vector<IntermediateCode*>& code)
 {

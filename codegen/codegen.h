@@ -12,6 +12,7 @@ std::string to_asm(IntermediateCode* code,
                    std::size_t all_subtracted,
                    std::size_t all_spilled,
                    std::size_t all_exceeding_args,
+                   int has_call,
                    std::size_t& already_allocated);
 
 struct CodeGenerator

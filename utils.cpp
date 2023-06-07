@@ -64,4 +64,13 @@ void print_symbol_stack(const std::stack<void*>& stack)
     printf("\n");   
 }
 
+void print_set(const std::set<std::size_t>& set)
+{
+    for (auto& elem: set)
+    {
+        printf("%lu ", elem);
+    }
+    printf("\n");
+}
+
 

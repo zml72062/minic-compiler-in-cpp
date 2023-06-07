@@ -52,7 +52,7 @@ struct LivenessUpdater
 
 struct AllocationTable
 {
-    /* 1-7 means t0-t6, (1 << 30) means memory */
+    /* 1-7 means t0-t6,  >(1 << 29) means memory */
     std::vector<std::size_t> allocation_table;
     std::size_t register_lower_range;
     std::set<std::size_t> free_registers;

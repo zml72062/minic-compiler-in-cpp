@@ -68,7 +68,7 @@ void CodeGenerator::generate_code(std::ostream& file)
                      << "  sw   s2, -12(sp)\n"
                      << "  sw   s1, -16(sp)\n"
                      << "  sw   s0, -20(sp)\n"
-                     << "  addi s0, s0, -20\n";
+                     << "  addi s0, sp, -20\n";
             }
             else
             {
@@ -76,7 +76,7 @@ void CodeGenerator::generate_code(std::ostream& file)
                      << "  sw   s2, -8(sp)\n"
                      << "  sw   s1, -12(sp)\n"
                      << "  sw   s0, -16(sp)\n"
-                     << "  addi s0, s0, -16\n";
+                     << "  addi s0, sp, -16\n";
             }
             if (stack_mov <= 2048)
             {
@@ -90,7 +90,7 @@ void CodeGenerator::generate_code(std::ostream& file)
             std::size_t already_alloc = 0;
             for (auto& line: func->code)
             {
-                file << to_asm(line, stack_mov, max_spill, exceeding_args, already_alloc) << "\n";
+                file << to_asm(line, stack_mov, max_spill, exceeding_args, has_call, already_alloc) << "\n";
             }
             file << "\n";            
         }
@@ -136,6 +136,7 @@ std::string to_asm(IntermediateCode* code,
                    std::size_t all_subtracted,
                    std::size_t all_spilled,
                    std::size_t all_exceeding_args,
+                   int has_call,
                    std::size_t& already_allocated)
 {
     auto labels = code->labels;
@@ -276,7 +277,7 @@ std::string to_asm(IntermediateCode* code,
                 return prefix + "  mv   " + reg_to_str(loperand) + ", " + arg_to_str(roperand);
             else
             {
-                auto up_from_s0 = (roperand - 3) * INT_SIZE;
+                auto up_from_s0 = (roperand - 4 + has_call) * INT_SIZE;
                 return prefix + "  lw   " + reg_to_str(loperand) + ", " + std::to_string(up_from_s0) + "(s0)";
             }
         }
