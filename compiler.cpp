@@ -7,7 +7,7 @@
 #include <string.h>
 #include <fstream>
 
-#define MAX_CODE_LENGTH 16384
+#define MAX_CODE_LENGTH 1048576
 
 SymbolTable* symbol_table;
 
@@ -83,6 +83,8 @@ int main(int argc, char** argv)
     }
 
     auto code_out = gen.simplify_code();
+
+    gen.print_code();
 
     /* Optimization and register allocation. */
     register_alloc_optim(code_out);

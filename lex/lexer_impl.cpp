@@ -69,13 +69,13 @@ Lexeme Lexer::next_lexeme()
             return Lexeme(RESERVED, DIVIDE_OPERATOR);
         }
     }
-    else if (c1 == ' ' || c1 == '\t' || c1 == '\n') /* Whitespaces. */
+    else if (c1 == ' ' || c1 == '\t' || c1 == '\n' || c1 == '\r') /* Whitespaces. */
     {
         if (c1 == '\n')
             this->lineno++;
         std::size_t id = this->cur_idx + 1;
         while (id != length && 
-               (code[id] == ' ' || code[id] == '\t' || code[id] == '\n'))
+               (code[id] == ' ' || code[id] == '\t' || code[id] == '\n' || code[id] == '\r'))
         {
             if (code[id] == '\n')
                 this->lineno++;
