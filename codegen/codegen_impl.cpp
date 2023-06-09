@@ -268,11 +268,19 @@ std::string to_asm(IntermediateCode* code,
             }
         }
         case INSTR_JMP:
-            return prefix + "  j    " + label_to_str(roperand);
+                // return prefix + "  j    " + label_to_str(roperand);
+                return prefix + "  la   s3, " + label_to_str(roperand) + "\n"
+                     + "  jr   s3";
         case INSTR_JE:
-            return prefix + "  beqz " + reg_to_str(loperand) + ", " + label_to_str(roperand);
+                // return prefix + "  beqz " + reg_to_str(loperand) + ", " + label_to_str(roperand);
+                return prefix + "  la   s3, " + label_to_str(roperand) + "\n" +  
+                     + "  bnez " + reg_to_str(loperand) + ", 8\n"
+                     + "  jr   s3";
         case INSTR_JNE:
-            return prefix + "  bnez " + reg_to_str(loperand) + ", " + label_to_str(roperand);
+                // return prefix + "  bnez " + reg_to_str(loperand) + ", " + label_to_str(roperand);
+                return prefix + "  la   s3, " + label_to_str(roperand) + "\n" +  
+                     + "  beqz " + reg_to_str(loperand) + ", 8\n"
+                     + "  jr   s3";
         case INSTR_ARG:
         {
             if (loperand >= 0 && loperand <= 7)

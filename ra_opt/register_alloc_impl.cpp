@@ -169,7 +169,7 @@ void RegisterModifier::modify(IntermediateCode* _code,
         if (reg <= (1 << 29))
         {
             this->alloc_table.free_registers.insert(reg);
-            this->alloc_table[reg] = (1 << 29) + reg;
+            this->alloc_table[l] = (1 << 29) + l;
         }
     }
 

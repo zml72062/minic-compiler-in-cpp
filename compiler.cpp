@@ -84,8 +84,6 @@ int main(int argc, char** argv)
 
     auto code_out = gen.simplify_code();
 
-    gen.print_code();
-
     /* Optimization and register allocation. */
     register_alloc_optim(code_out);
 
