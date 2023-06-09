@@ -389,6 +389,7 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
         {
             Function* func_call = (Function*)symbol;
             auto size = func_call->children.size();
+            std::vector<std::size_t> args;
             for (std::size_t i = 0; i < size; i++)
             {
                 auto arg_type = func_call->entry->type.ret_and_arg_types[i + 1];
@@ -403,8 +404,12 @@ std::size_t IntermediateCodeGenerator::generate_code_for_exp(Symbol* symbol)
                     /* Pass by reference. */
                     arg = generate_code_for_exp(func_call->children[i]);
                 }
+                args.push_back(arg);
+            }
+            for (std::size_t i = 0; i < size; i++)
+            {
                 code.push_back(new IntermediateCode(
-                    INSTR_ARG, PLACEHOLDER, i, arg, statement_label
+                    INSTR_ARG, PLACEHOLDER, i, args[i], statement_label
                 ));
             }
             auto var = generate_addr();
